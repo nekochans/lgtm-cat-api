@@ -1,2 +1,2 @@
-# -lgtm-cat-api
+# lgtm-cat-api
 LGTMeowで利用するWebAPI
