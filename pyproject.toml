@@ -1,0 +1,24 @@
+[project]
+name = "lgtm-cat-api"
+version = "0.1.0"
+description = "LGTMeowで利用するWebAPI"
+authors = [
+    { name = "kobayashi-m42", email = "m42kobayashi@gmail.com" }
+]
+dependencies = []
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lgtm_cat_api"]
