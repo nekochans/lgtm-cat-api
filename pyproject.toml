@@ -5,7 +5,10 @@ description = "LGTMeowで利用するWebAPI"
 authors = [
     { name = "kobayashi-m42", email = "m42kobayashi@gmail.com" }
 ]
-dependencies = []
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.6",
+]
 readme = "README.md"
 requires-python = ">= 3.8"
 
