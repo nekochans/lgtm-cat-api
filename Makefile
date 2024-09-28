@@ -8,3 +8,6 @@ fix:
 
 format:
 	rye run ruff format
+
+typecheck:
+	rye run mypy src/ --strict
