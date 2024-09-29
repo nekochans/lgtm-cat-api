@@ -1,0 +1,62 @@
+name: ci
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rye
+        uses: eifinger/setup-rye@v4
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: rye sync
+
+      - name: Ruff check
+        run: rye run ruff check --output-format=github .
+
+  format:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rye
+        uses: eifinger/setup-rye@v4
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: rye sync
+
+      - name: Ruff format check
+        run: rye run ruff format --check
+
+  typecheck:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rye
+        uses: eifinger/setup-rye@v4
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: rye sync
+
+      - name: Mypy
+        run: rye run mypy src/ --strict
