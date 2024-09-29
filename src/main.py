@@ -36,7 +36,9 @@ async def extract_random_lgtm_images() -> List[LgtmImageRandomListResponse]:
 
 
 @app.post("/lgtm-images", response_model=LgtmImageCreateResponse)
-async def create_lgtm_image(lgtm_image_create: LgtmImageCreateRequest) -> LgtmImageCreateResponse:
+async def create_lgtm_image(
+    lgtm_image_create: LgtmImageCreateRequest,
+) -> LgtmImageCreateResponse:
     return LgtmImageCreateResponse(
         imageUrl="https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp"
     )
@@ -45,7 +47,9 @@ async def create_lgtm_image(lgtm_image_create: LgtmImageCreateRequest) -> LgtmIm
 @app.get(
     "/lgtm-images/recently-created", response_model=LgtmImageRecentlyCreatedListResponse
 )
-async def extract_recently_created_lgtm_images() -> List[LgtmImageRecentlyCreatedListResponse]:
+async def extract_recently_created_lgtm_images() -> (
+    List[LgtmImageRecentlyCreatedListResponse]
+):
     return [
         LgtmImageRecentlyCreatedListResponse(
             id="1",
