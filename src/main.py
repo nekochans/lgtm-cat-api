@@ -45,11 +45,12 @@ async def create_lgtm_image(
 
 
 @app.get(
-    "/lgtm-images/recently-created", response_model=LgtmImageRecentlyCreatedListResponse
+    "/lgtm-images/recently-created",
+    response_model=List[LgtmImageRecentlyCreatedListResponse],
 )
-async def extract_recently_created_lgtm_images() -> (
-    List[LgtmImageRecentlyCreatedListResponse]
-):
+async def extract_recently_created_lgtm_images() -> List[
+    LgtmImageRecentlyCreatedListResponse
+]:
     return [
         LgtmImageRecentlyCreatedListResponse(
             id="1",
