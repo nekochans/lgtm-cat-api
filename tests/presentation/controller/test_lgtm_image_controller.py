@@ -19,28 +19,10 @@ class TestLgtmImageController:
         return LgtmImageRepository()
 
     @pytest.mark.asyncio
-    async def test_exec_success_returns_json_response(
+    async def test_exec_success_with_default_parameters(
         self, repository: LgtmImageRepository
     ) -> None:
-        """正常系: JSONResponseを返す."""
-        # Arrange
-        base_url = "example.com"
-
-        # Act
-        result = await LgtmImageController.exec(
-            repository=repository,
-            base_url=base_url,
-        )
-
-        # Assert
-        assert isinstance(result, JSONResponse)
-        assert result.status_code == 200
-
-    @pytest.mark.asyncio
-    async def test_exec_success_response_has_correct_structure(
-        self, repository: LgtmImageRepository
-    ) -> None:
-        """正常系: レスポンスが正しい構造を持つ."""
+        """正常系（デフォルトのパラメータのみで実行）: レスポンスの構造、データ形式、件数を検証."""
         # Arrange
         base_url = "cdn.example.com"
 
@@ -50,68 +32,34 @@ class TestLgtmImageController:
             base_url=base_url,
         )
 
-        # Assert
+        # Assert - JSONResponseを返すことを検証
         assert isinstance(result, JSONResponse)
+        assert result.status_code == 200
+
+        # Assert - レスポンス構造を検証
         content = json.loads(result.body)
         assert isinstance(content, dict)
         assert "LgtmImages" in content
         assert isinstance(content["LgtmImages"], list)
         assert len(content["LgtmImages"]) > 0
 
+        # Assert - デフォルトのlimit(9)で正しい数の画像を返すことを検証
+        assert len(content["LgtmImages"]) == 9
+
+        # Assert - 各アイテムの構造とドメインエンティティの変換を検証
         for item in content["LgtmImages"]:
             assert "id" in item
             assert "url" in item
             assert isinstance(item["id"], str)
             assert isinstance(item["url"], str)
+            # IDは数字の文字列
+            assert item["id"].isdigit()
+            # URLは指定されたbase_urlで始まる
             assert item["url"].startswith(f"https://{base_url}")
-
-    @pytest.mark.asyncio
-    async def test_exec_success_converts_domain_entity_to_response(
-        self, repository: LgtmImageRepository
-    ) -> None:
-        """正常系: ドメインエンティティをレスポンスモデルに変換."""
-        # Arrange
-        base_url = "example.com"
-
-        # Act
-        result = await LgtmImageController.exec(
-            repository=repository,
-            base_url=base_url,
-        )
-
-        # Assert
-        assert isinstance(result, JSONResponse)
-        content = json.loads(result.body)
-        assert "LgtmImages" in content
-        assert len(content["LgtmImages"]) > 0
-
-        # IDとURLが正しく設定されているか確認
-        for item in content["LgtmImages"]:
-            assert item["id"].isdigit()  # IDは数字の文字列
-            assert "/" in item["url"]  # URLにはパスが含まれる
-            assert item["url"].endswith(".webp")  # 拡張子が含まれる
-
-    @pytest.mark.asyncio
-    async def test_exec_returns_expected_number_of_items(
-        self, repository: LgtmImageRepository
-    ) -> None:
-        """正常系: デフォルトのlimitで正しい数の画像を返す."""
-        # Arrange
-        base_url = "test.example.com"
-
-        # Act
-        result = await LgtmImageController.exec(
-            repository=repository,
-            base_url=base_url,
-        )
-
-        # Assert
-        assert isinstance(result, JSONResponse)
-        content = json.loads(result.body)
-        assert "LgtmImages" in content
-        # デフォルトのlimit(9)で画像が返される
-        assert len(content["LgtmImages"]) == 9
-        assert all("id" in item and "url" in item for item in content["LgtmImages"])
+            # URLにはパスが含まれる
+            assert "/" in item["url"]
+            # 拡張子が含まれる
+            assert item["url"].endswith(".webp")
 
     @pytest.mark.asyncio
     async def test_exec_with_different_base_urls(
