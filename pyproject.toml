@@ -35,3 +35,7 @@ packages = ["src"]
 [tool.mypy]
 explicit_package_bases = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
