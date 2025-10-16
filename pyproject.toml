@@ -21,10 +21,17 @@ managed = true
 dev-dependencies = [
     "ruff>=0.6.8",
     "mypy>=1.11.2",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
 ]
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/lgtm_cat_api"]
+packages = ["src"]
+
+[tool.mypy]
+explicit_package_bases = true
+mypy_path = "$MYPY_CONFIG_FILE_DIR"
