@@ -109,3 +109,38 @@
 - FastAPIの`Depends`を使用して設定値を注入
 - 例: `base_url: str = Depends(get_lgtm_images_base_url)`
 - 環境変数管理を`config.py`に集約
+
+### Controller レスポンス設計ルール
+
+#### JSONResponse返却の統一ルール
+
+**Controller から `JSONResponse` を返す際は、`src/presentation/controller/response_helper.py`の`create_json_response`関数を必ず使用してください**
+
+この関数により、クライアントに不要なフィールドを返さず、クリーンなAPIレスポンスを保つことができます。
+
+#### 実装例：
+
+```python
+from src.presentation.controller.response_helper import create_json_response
+from src.presentation.controller.lgtm_image_response import LgtmImageRandomListResponse
+
+# レスポンスモデルを作成
+response = LgtmImageRandomListResponse(LgtmImages=image_items)
+
+# create_json_response関数でJSONResponseを生成
+return create_json_response(response)
+
+# ステータスコードを指定する場合
+return create_json_response(response, status_code=201)
+```
+
+#### パラメータの説明：
+
+- **`exclude_none=True`**: 値が `None` のフィールドをJSONから除外します
+- **`exclude_unset=True`**: Pydanticモデルのインスタンス化時に明示的に設定されなかったフィールドをJSONから除外します
+
+#### 注意事項：
+
+- 空文字 `""` は **どちらのパラメータでも除外されません**
+- デフォルト値を持つフィールドで、そのデフォルト値をクライアントに返したい場合は、明示的に設定する必要があります
+- **エラーレスポンス（辞書形式）**の場合は、従来通り`JSONResponse`を直接使用してください（例: `JSONResponse(status_code=404, content={"error": "..."})`）

@@ -11,6 +11,7 @@ from src.presentation.controller.lgtm_image_response import (
     LgtmImageItem,
     LgtmImageRandomListResponse,
 )
+from src.presentation.controller.response_helper import create_json_response
 from src.usecase.extract_random_lgtm_images_usecase import (
     ExtractRandomLgtmImagesUsecase,
 )
@@ -31,7 +32,7 @@ class LgtmImageController:
                 for image in images
             ]
             response = LgtmImageRandomListResponse(LgtmImages=image_items)
-            return JSONResponse(content=response.model_dump(mode="json", by_alias=True))
+            return create_json_response(response)
         except ErrRecordCount:
             return JSONResponse(
                 status_code=404,
