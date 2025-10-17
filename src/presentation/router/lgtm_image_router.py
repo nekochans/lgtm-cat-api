@@ -1,16 +1,26 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import get_lgtm_images_base_url
+from src.domain.repository.lgtm_image_repository_interface import (
+    LgtmImageRepositoryInterface,
+)
+from src.infrastructure.database import get_db_session
 from src.infrastructure.lgtm_image_repository import LgtmImageRepository
 from src.presentation.controller.lgtm_image_controller import LgtmImageController
 
 router = APIRouter()
 
-# 依存関係の注入
-repository = LgtmImageRepository()
+
+def get_lgtm_image_repository(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> LgtmImageRepositoryInterface:
+    return LgtmImageRepository(session)
 
 
 @router.get(
@@ -42,6 +52,9 @@ repository = LgtmImageRepository()
     },
 )
 async def extract_random_lgtm_images(
+    repository: Annotated[
+        LgtmImageRepositoryInterface, Depends(get_lgtm_image_repository)
+    ],
     base_url: str = Depends(get_lgtm_images_base_url),
 ) -> JSONResponse:
     return await LgtmImageController.exec(repository, base_url)

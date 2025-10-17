@@ -6,7 +6,10 @@ authors = [
     { name = "kobayashi-m42", email = "m42kobayashi@gmail.com" }
 ]
 dependencies = [
+    "asyncmy>=0.2.10",
     "fastapi>=0.115.0",
+    "greenlet>=3.2.4",
+    "sqlalchemy>=2.0.44",
     "uvicorn>=0.30.6",
 ]
 readme = "README.md"
