@@ -69,7 +69,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
-async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+async def create_db_session() -> AsyncGenerator[AsyncSession, None]:
     """データベースセッションを取得する依存性注入用の関数."""
     async with AsyncSessionLocal() as session:
         yield session

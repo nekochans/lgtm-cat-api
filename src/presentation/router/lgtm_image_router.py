@@ -10,15 +10,15 @@ from src.config import get_lgtm_images_base_url
 from src.domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
-from src.infrastructure.database import get_db_session
+from src.infrastructure.database import create_db_session
 from src.infrastructure.lgtm_image_repository import LgtmImageRepository
 from src.presentation.controller.lgtm_image_controller import LgtmImageController
 
 router = APIRouter()
 
 
-def get_lgtm_image_repository(
-    session: Annotated[AsyncSession, Depends(get_db_session)],
+def create_lgtm_image_repository(
+    session: Annotated[AsyncSession, Depends(create_db_session)],
 ) -> LgtmImageRepositoryInterface:
     return LgtmImageRepository(session)
 
@@ -53,7 +53,7 @@ def get_lgtm_image_repository(
 )
 async def extract_random_lgtm_images(
     repository: Annotated[
-        LgtmImageRepositoryInterface, Depends(get_lgtm_image_repository)
+        LgtmImageRepositoryInterface, Depends(create_lgtm_image_repository)
     ],
     base_url: str = Depends(get_lgtm_images_base_url),
 ) -> JSONResponse:
