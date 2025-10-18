@@ -12,3 +12,7 @@ wheels/
 # IDEA
 .idea
 .vscode
+
+# Environment variables
+.env
+.envrc
