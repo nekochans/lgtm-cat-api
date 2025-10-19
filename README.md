@@ -45,7 +45,26 @@ cp .envrc.example .envrc
 #### 環境変数一覧
 
 ```bash
+# LGTM画像のベースURL
 export LGTM_IMAGES_BASE_URL=
+
+# PlanetScale接続情報
+export DATABASE_USER=
+export DATABASE_PASSWORD=
+export DATABASE_HOST=
+export DATABASE_NAME=
+export SSL_CA_CERT=
+
+# PlanetScale API設定（テスト用）
+export PLANETSCALE_ORG_NAME=
+export PLANETSCALE_SERVICE_TOKEN_ID=
+export PLANETSCALE_SERVICE_TOKEN=
+export PLANETSCALE_DATABASE_NAME=
+export PLANETSCALE_BRANCH_NAME=
+
+# テスト用ローカルMySQL接続情報
+export TEST_DATABASE_PASSWORD=
+export TEST_DATABASE_ROOT_PASSWORD=
 ```
 
 **注意**: `.envrc` ファイルは `.gitignore` に含まれているため、リポジトリにコミットされません。

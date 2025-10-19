@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  mysql-test:
+    image: mysql:8.0.42
+    container_name: lgtm-cat-test-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${TEST_DATABASE_ROOT_PASSWORD}
+      MYSQL_DATABASE: test_db
+      MYSQL_USER: test_app_user
+      MYSQL_PASSWORD: ${TEST_DATABASE_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql

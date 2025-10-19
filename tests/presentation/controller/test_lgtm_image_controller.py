@@ -1,29 +1,27 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
 import json
-from unittest.mock import AsyncMock
 
 import pytest
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.repository.lgtm_image_repository_interface import (
-    LgtmImageRepositoryInterface,
-)
 from src.infrastructure.lgtm_image_repository import LgtmImageRepository
 from src.presentation.controller.lgtm_image_controller import LgtmImageController
+from tests.fixtures.test_data_helpers import insert_test_lgtm_images
 
 
 class TestLgtmImageController:
-    @pytest.fixture
-    def repository(self) -> LgtmImageRepository:
-        return LgtmImageRepository()
-
     @pytest.mark.asyncio
     async def test_exec_success_with_default_parameters(
-        self, repository: LgtmImageRepository
+        self, test_db_session: AsyncSession
     ) -> None:
         """正常系（デフォルトのパラメータのみで実行）: レスポンスの構造、データ形式、件数を検証."""
-        # Arrange
+        # Arrange - DBに20件のテストデータを挿入
+        await insert_test_lgtm_images(test_db_session, count=20)
+
+        repository = LgtmImageRepository(test_db_session)
         base_url = "cdn.example.com"
 
         # Act
@@ -63,10 +61,13 @@ class TestLgtmImageController:
 
     @pytest.mark.asyncio
     async def test_exec_with_different_base_urls(
-        self, repository: LgtmImageRepository
+        self, test_db_session: AsyncSession
     ) -> None:
         """正常系: 異なるbase_urlで正しく動作する."""
-        # Arrange
+        # Arrange - DBに20件のテストデータを挿入
+        await insert_test_lgtm_images(test_db_session, count=20)
+
+        repository = LgtmImageRepository(test_db_session)
         base_urls = [
             "example.com",
             "cdn.example.com",
@@ -89,17 +90,19 @@ class TestLgtmImageController:
                 assert item["url"].startswith(f"https://{base_url}")
 
     @pytest.mark.asyncio
-    async def test_exec_raises_error_when_insufficient_records(self) -> None:
+    async def test_exec_raises_error_when_insufficient_records(
+        self, test_db_session: AsyncSession
+    ) -> None:
         """異常系: レコード数が不足している場合に404を返す."""
-        # Arrange
-        mock_repository = AsyncMock(spec=LgtmImageRepositoryInterface)
-        # リポジトリは5件のIDしか返さないが、デフォルトのlimitは9件
-        mock_repository.find_all_ids.return_value = ["1", "2", "3", "4", "5"]
+        # Arrange - DBに5件のデータを挿入（デフォルトのlimitは9件なので不足）
+        await insert_test_lgtm_images(test_db_session, count=5)
+
+        repository = LgtmImageRepository(test_db_session)
         base_url = "example.com"
 
         # Act
         result = await LgtmImageController.exec(
-            repository=mock_repository,
+            repository=repository,
             base_url=base_url,
         )
 
@@ -111,16 +114,17 @@ class TestLgtmImageController:
         assert content["error"] == "Insufficient LGTM images available"
 
     @pytest.mark.asyncio
-    async def test_exec_raises_error_when_no_records(self) -> None:
+    async def test_exec_raises_error_when_no_records(
+        self, test_db_session: AsyncSession
+    ) -> None:
         """異常系: レコードが0件の場合に404を返す."""
-        # Arrange
-        mock_repository = AsyncMock(spec=LgtmImageRepositoryInterface)
-        mock_repository.find_all_ids.return_value = []
+        # Arrange - DBにデータを挿入しない（0件）
+        repository = LgtmImageRepository(test_db_session)
         base_url = "example.com"
 
         # Act
         result = await LgtmImageController.exec(
-            repository=mock_repository,
+            repository=repository,
             base_url=base_url,
         )
 
@@ -132,18 +136,20 @@ class TestLgtmImageController:
         assert content["error"] == "Insufficient LGTM images available"
 
     @pytest.mark.asyncio
-    async def test_exec_propagates_repository_errors(self) -> None:
+    async def test_exec_propagates_repository_errors(
+        self, test_db_session: AsyncSession
+    ) -> None:
         """異常系: リポジトリのエラーで500を返す."""
-        # Arrange
-        mock_repository = AsyncMock(spec=LgtmImageRepositoryInterface)
-        mock_repository.find_all_ids.side_effect = RuntimeError(
-            "Database connection failed"
-        )
+        # Arrange - lgtm_imagesテーブルを削除してDBエラーを発生させる
+        await test_db_session.execute(text("DROP TABLE IF EXISTS lgtm_images"))
+        await test_db_session.commit()
+
+        repository = LgtmImageRepository(test_db_session)
         base_url = "example.com"
 
         # Act
         result = await LgtmImageController.exec(
-            repository=mock_repository,
+            repository=repository,
             base_url=base_url,
         )
 
@@ -153,4 +159,3 @@ class TestLgtmImageController:
         content = json.loads(result.body)
         assert "error" in content
         assert "Internal server error" in content["error"]
-        assert "Database connection failed" in content["error"]

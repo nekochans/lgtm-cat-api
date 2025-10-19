@@ -1,8 +1,9 @@
-# 絶対厳守:編集前に必ずAI実装ルールを読む
+# 絶対厳守：編集前に必ずAI実装ルールを読む
 
 import random
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.lgtm_image import DEFAULT_RANDOM_IMAGES_LIMIT
 from src.domain.lgtm_image_errors import ErrRecordCount
@@ -10,19 +11,19 @@ from src.infrastructure.lgtm_image_repository import LgtmImageRepository
 from src.usecase.extract_random_lgtm_images_usecase import (
     ExtractRandomLgtmImagesUsecase,
 )
+from tests.fixtures.test_data_helpers import insert_test_lgtm_images
 
 
 class TestExtractRandomLgtmImagesUsecase:
-    @pytest.fixture
-    def repository(self) -> LgtmImageRepository:
-        return LgtmImageRepository()
-
     @pytest.mark.asyncio
     async def test_execute_success_with_default_limit(
-        self, repository: LgtmImageRepository
+        self, test_db_session: AsyncSession
     ) -> None:
         """正常系: デフォルトのlimitでランダムな画像を取得できる."""
-        # Arrange
+        # Arrange - DBに10件のテストデータを挿入
+        await insert_test_lgtm_images(test_db_session, count=10)
+
+        repository = LgtmImageRepository(test_db_session)
         base_url = "example.com"
         random.seed(42)  # ランダム性を固定
 
@@ -44,10 +45,13 @@ class TestExtractRandomLgtmImagesUsecase:
 
     @pytest.mark.asyncio
     async def test_execute_success_with_custom_limit(
-        self, repository: LgtmImageRepository
+        self, test_db_session: AsyncSession
     ) -> None:
         """正常系: カスタムlimitでランダムな画像を取得できる."""
-        # Arrange
+        # Arrange - DBに10件のテストデータを挿入
+        await insert_test_lgtm_images(test_db_session, count=10)
+
+        repository = LgtmImageRepository(test_db_session)
         custom_limit = 3
         base_url = "example.com"
         random.seed(100)
@@ -66,11 +70,13 @@ class TestExtractRandomLgtmImagesUsecase:
 
     @pytest.mark.asyncio
     async def test_execute_raises_err_record_count_when_insufficient_images(
-        self, repository: LgtmImageRepository
+        self, test_db_session: AsyncSession
     ) -> None:
         """異常系: 利用可能な画像数が不足している場合にErrRecordCountが発生する."""
-        # Arrange
-        # リポジトリには10個のデータしかないため、それ以上を要求するとエラーになる
+        # Arrange - DBに10件のテストデータを挿入
+        await insert_test_lgtm_images(test_db_session, count=10)
+
+        repository = LgtmImageRepository(test_db_session)
         base_url = "example.com"
         limit = 20  # 10個しかないのに20個要求
 
@@ -84,10 +90,13 @@ class TestExtractRandomLgtmImagesUsecase:
 
     @pytest.mark.asyncio
     async def test_execute_converts_objects_to_entities_correctly(
-        self, repository: LgtmImageRepository
+        self, test_db_session: AsyncSession
     ) -> None:
         """正常系: LgtmImageObjectがLgtmImageに正しく変換される."""
-        # Arrange
+        # Arrange - DBに10件のテストデータを挿入
+        await insert_test_lgtm_images(test_db_session, count=10)
+
+        repository = LgtmImageRepository(test_db_session)
         base_url = "cdn.example.com"
         limit = 5
         random.seed(100)
@@ -113,10 +122,13 @@ class TestExtractRandomLgtmImagesUsecase:
 
     @pytest.mark.asyncio
     async def test_execute_returns_different_results_with_different_seeds(
-        self, repository: LgtmImageRepository
+        self, test_db_session: AsyncSession
     ) -> None:
         """正常系: 異なるランダムシードで異なる結果が返される."""
-        # Arrange
+        # Arrange - DBに10件のテストデータを挿入
+        await insert_test_lgtm_images(test_db_session, count=10)
+
+        repository = LgtmImageRepository(test_db_session)
         base_url = "example.com"
         limit = 5
 
