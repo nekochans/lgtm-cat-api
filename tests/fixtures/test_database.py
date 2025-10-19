@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from tests.fixtures.planetscale_schema import get_planetscale_schema
+from tests.fixtures.planetscale_schema import fetch_planetscale_schema
 
 
 def generate_random_db_name() -> str:
@@ -66,7 +66,7 @@ async def create_tables_from_schema(engine: AsyncEngine) -> None:
         ValueError: スキーマ取得に失敗した場合
         SQLAlchemyError: テーブル作成に失敗した場合
     """
-    schema = await get_planetscale_schema()
+    schema = await fetch_planetscale_schema()
 
     async with engine.begin() as conn:
         for table_name, create_statement in schema.items():

@@ -8,7 +8,7 @@ import aiohttp
 _schema_cache: dict[str, str] | None = None
 
 
-async def get_planetscale_schema() -> dict[str, str]:
+async def fetch_planetscale_schema() -> dict[str, str]:
     """PlanetScale APIからスキーマを取得してキャッシュする.
 
     Returns:
