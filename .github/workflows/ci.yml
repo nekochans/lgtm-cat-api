@@ -74,7 +74,7 @@ jobs:
           enable-cache: true
 
       - name: Docker set up
-        run: docker compose up --build -d
+        run: docker compose up --build -d --wait
         env:
           TEST_DATABASE_ROOT_PASSWORD: ${{ secrets.TEST_DATABASE_ROOT_PASSWORD }}
           TEST_DATABASE_PASSWORD: ${{ secrets.TEST_DATABASE_PASSWORD }}
