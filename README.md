@@ -93,6 +93,9 @@ make format
 
 # 型チェック（strictモード）
 make typecheck
+
+# すべてのテストを実行
+make test
 ```
 
 すべてのコマンドは正しい仮想環境を使用するために`uv run`経由で実行されます（Makefileが自動的に対応）。
@@ -105,6 +108,7 @@ make typecheck
   - ci (Ruffリントチェック)
   - format (Ruffフォーマットチェック)
   - typecheck (mypy厳格型チェック)
+  - test (pytestによるテスト実行)
 
 ## API仕様
 
