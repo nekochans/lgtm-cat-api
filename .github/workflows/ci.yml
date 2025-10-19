@@ -60,3 +60,34 @@ jobs:
 
       - name: Mypy
         run: uv run mypy src/ --strict
+
+  test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Docker set up
+        run: docker compose up --build -d
+        env:
+          TEST_DATABASE_ROOT_PASSWORD: ${{ secrets.TEST_DATABASE_ROOT_PASSWORD }}
+          TEST_DATABASE_PASSWORD: ${{ secrets.TEST_DATABASE_PASSWORD }}
+
+      - name: Sync dependencies
+        run: uv sync
+
+      - name: Test
+        run: make test
+        env:
+          TEST_DATABASE_PASSWORD: ${{ secrets.TEST_DATABASE_PASSWORD }}
+          PLANETSCALE_ORG_NAME: ${{ secrets.PLANETSCALE_ORG_NAME }}
+          PLANETSCALE_SERVICE_TOKEN_ID: ${{ secrets.PLANETSCALE_SERVICE_TOKEN_ID }}
+          PLANETSCALE_SERVICE_TOKEN: ${{ secrets.PLANETSCALE_SERVICE_TOKEN }}
+          PLANETSCALE_DATABASE_NAME: ${{ secrets.PLANETSCALE_DATABASE_NAME }}
+          PLANETSCALE_BRANCH_NAME: ${{ secrets.PLANETSCALE_BRANCH_NAME }}
