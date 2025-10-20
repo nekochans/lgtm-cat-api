@@ -16,8 +16,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        # リクエストIDを生成して設定
-        request_id = generate_request_id()
+        # X-Request-IdヘッダーからリクエストIDを取得、なければ生成
+        request_id = request.headers.get("X-Request-Id") or generate_request_id()
         set_request_id(request_id)
 
         # リクエスト受信ログ
