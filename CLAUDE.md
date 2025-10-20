@@ -55,6 +55,7 @@ LGTMeow用のFastAPIベースのWeb APIです。依存関係管理には`uv`を�
 - `make fix` - Ruffリンターで自動修正
 - `make format` - Ruffでコードをフォーマット
 - `make typecheck` - mypyで`src/`ディレクトリを厳格モードで型チェック
+- `make test` - pytestですべてのテストを実行
 
 すべてのコマンドは正しい仮想環境を使用するために`uv run`経由で実行する必要があります。Makefileは既にこれに対応しています。
 
@@ -89,10 +90,11 @@ APIはシンプルなRESTパターンに従い、3つのエンドポイントが
 - `make fix`で自動修正し、その後`make format`でフォーマットします
 
 ### CIパイプライン
-CIは3つの独立したジョブを実行します：
+CIは4つの独立したジョブを実行します：
 1. **ci** - Ruffリントチェック
 2. **format** - Ruffフォーマットチェック
 3. **typecheck** - mypy厳格型チェック
+4. **test** - pytestによるテスト実行
 
 PRをマージするにはすべてのジョブがパスする必要があります。
 

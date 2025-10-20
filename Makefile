@@ -11,3 +11,6 @@ format:
 
 typecheck:
 	uv run mypy src/ --strict
+
+test:
+	uv run pytest -vv -s src/ tests/
