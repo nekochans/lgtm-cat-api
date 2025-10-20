@@ -65,6 +65,9 @@ export PLANETSCALE_BRANCH_NAME=
 # テスト用ローカルMySQL接続情報
 export TEST_DATABASE_PASSWORD=
 export TEST_DATABASE_ROOT_PASSWORD=
+
+# ログ設定
+export LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 ```
 
 **注意**: `.envrc` ファイルは `.gitignore` に含まれているため、リポジトリにコミットされません。

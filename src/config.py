@@ -8,6 +8,13 @@ LGTM_IMAGES_BASE_URL: Final[str] = os.getenv(
     "LGTM_IMAGES_BASE_URL", "lgtm-images.lgtmeow.com"
 )
 
+# ログレベル設定（デフォルト: INFO）
+LOG_LEVEL: Final[str] = os.getenv("LOG_LEVEL", "INFO")
+
 
 def get_lgtm_images_base_url() -> str:
     return LGTM_IMAGES_BASE_URL
+
+
+def get_log_level() -> str:
+    return LOG_LEVEL
