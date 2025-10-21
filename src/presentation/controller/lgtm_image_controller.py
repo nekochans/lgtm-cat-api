@@ -7,6 +7,7 @@ from src.domain.lgtm_image_errors import ErrRecordCount
 from src.domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
+from src.log.logger import get_logger
 from src.presentation.controller.lgtm_image_response import (
     LgtmImageItem,
     LgtmImageRandomListResponse,
@@ -16,6 +17,8 @@ from src.usecase.extract_random_lgtm_images_usecase import (
     ExtractRandomLgtmImagesUsecase,
 )
 
+logger = get_logger(__name__)
+
 
 class LgtmImageController:
     @staticmethod
@@ -23,6 +26,8 @@ class LgtmImageController:
         repository: LgtmImageRepositoryInterface,
         base_url: str,
     ) -> JSONResponse:
+        logger.info("Extracting random LGTM images")
+
         try:
             images: list[LgtmImage] = await ExtractRandomLgtmImagesUsecase.execute(
                 repository, base_url
@@ -34,11 +39,17 @@ class LgtmImageController:
             response = LgtmImageRandomListResponse(LgtmImages=image_items)
             return create_json_response(response)
         except ErrRecordCount:
+            logger.error("Insufficient LGTM images available")
             return JSONResponse(
                 status_code=404,
                 content={"error": "Insufficient LGTM images available"},
             )
         except Exception as e:
+            logger.error(
+                "Unexpected error occurred",
+                exc_info=True,
+                extra={"error_type": type(e).__name__, "error_message": str(e)},
+            )
             return JSONResponse(
                 status_code=500,
                 content={"error": f"Internal server error: {str(e)}"},
