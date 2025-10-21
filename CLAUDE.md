@@ -47,14 +47,13 @@ LGTMeow用のFastAPIベースのWeb APIです。依存関係管理には`uv`を�
 - `uv sync` - すべての依存関係をインストール/同期（クローン後や依存関係変更時に実行）
 
 ### 開発サーバー
-- `python src/main.py` - 開発サーバーを http://0.0.0.0:8000 で起動（自動リロード有効）
-- または: `uv run python src/main.py`
+- `make run` - 開発サーバーを http://0.0.0.0:8000 で起動（自動リロード有効）
 
 ### コード品質チェック
 - `make lint` - Ruffリンターでコードをチェック
 - `make fix` - Ruffリンターで自動修正
 - `make format` - Ruffでコードをフォーマット
-- `make typecheck` - mypyで`src/`ディレクトリを厳格モードで型チェック
+- `make typecheck` - mypyで`src/`と`tests/`ディレクトリを厳格モードで型チェック
 - `make test` - pytestですべてのテストを実行
 
 すべてのコマンドは正しい仮想環境を使用するために`uv run`経由で実行する必要があります。Makefileは既にこれに対応しています。
