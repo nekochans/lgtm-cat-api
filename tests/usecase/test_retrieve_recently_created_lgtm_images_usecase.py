@@ -130,7 +130,6 @@ class TestRetrieveRecentlyCreatedLgtmImagesUsecase:
                 base_url=base_url,
             )
 
-
     @pytest.mark.asyncio
     async def test_execute_raises_error_when_insufficient_records(
         self, test_db_session: AsyncSession
@@ -150,4 +149,3 @@ class TestRetrieveRecentlyCreatedLgtmImagesUsecase:
                 base_url=base_url,
                 limit=limit,
             )
-

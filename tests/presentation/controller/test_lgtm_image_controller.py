@@ -235,7 +235,7 @@ class TestLgtmImageController:
             assert len(content["LgtmImages"]) > 0
             for item in content["LgtmImages"]:
                 assert item["url"].startswith(f"https://{base_url}")
- 
+
     @pytest.mark.asyncio
     async def test_exec_recently_created_raises_error_when_insufficient_records(
         self, test_db_session: AsyncSession
@@ -281,8 +281,6 @@ class TestLgtmImageController:
         content = json.loads(bytes(result.body))
         assert "error" in content
         assert content["error"] == "Insufficient LGTM images available"
-
-
 
     @pytest.mark.asyncio
     async def test_exec_recently_created_propagates_repository_errors(
