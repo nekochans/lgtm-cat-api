@@ -35,7 +35,7 @@ def create_lgtm_image_repository(
             "content": {
                 "application/json": {
                     "example": {
-                        "LgtmImages": [
+                        "lgtmImages": [
                             {
                                 "id": "1",
                                 "url": "https://example.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
@@ -72,7 +72,7 @@ async def extract_random_lgtm_images(
             "content": {
                 "application/json": {
                     "example": {
-                        "LgtmImages": [
+                        "lgtmImages": [
                             {
                                 "id": "1",
                                 "url": "https://example.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",

@@ -40,7 +40,7 @@ class LgtmImageController:
                 LgtmImageItem(id=image["id"], url=image["url"])  # type: ignore[arg-type]
                 for image in images
             ]
-            response = LgtmImageRandomListResponse(LgtmImages=image_items)
+            response = LgtmImageRandomListResponse(lgtmImages=image_items)
             return create_json_response(response)
         except ErrRecordCount:
             logger.error("Insufficient LGTM images available")
@@ -76,7 +76,7 @@ class LgtmImageController:
                 LgtmImageItem(id=image["id"], url=image["url"])  # type: ignore[arg-type]
                 for image in images
             ]
-            response = LgtmImageRecentlyCreatedListResponse(LgtmImages=image_items)
+            response = LgtmImageRecentlyCreatedListResponse(lgtmImages=image_items)
             return create_json_response(response)
         except ErrRecordCount:
             logger.error("Insufficient LGTM images available")

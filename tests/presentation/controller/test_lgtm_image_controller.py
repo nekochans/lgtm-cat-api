@@ -37,15 +37,15 @@ class TestLgtmImageController:
         # Assert - レスポンス構造を検証
         content = json.loads(bytes(result.body))
         assert isinstance(content, dict)
-        assert "LgtmImages" in content
-        assert isinstance(content["LgtmImages"], list)
-        assert len(content["LgtmImages"]) > 0
+        assert "lgtmImages" in content
+        assert isinstance(content["lgtmImages"], list)
+        assert len(content["lgtmImages"]) > 0
 
         # Assert - デフォルトのlimit(9)で正しい数の画像を返すことを検証
-        assert len(content["LgtmImages"]) == 9
+        assert len(content["lgtmImages"]) == 9
 
         # Assert - 各アイテムの構造とドメインエンティティの変換を検証
-        for item in content["LgtmImages"]:
+        for item in content["lgtmImages"]:
             assert "id" in item
             assert "url" in item
             assert isinstance(item["id"], str)
@@ -84,9 +84,9 @@ class TestLgtmImageController:
             # Assert
             assert isinstance(result, JSONResponse)
             content = json.loads(bytes(result.body))
-            assert "LgtmImages" in content
-            assert len(content["LgtmImages"]) > 0
-            for item in content["LgtmImages"]:
+            assert "lgtmImages" in content
+            assert len(content["lgtmImages"]) > 0
+            for item in content["lgtmImages"]:
                 assert item["url"].startswith(f"https://{base_url}")
 
     @pytest.mark.asyncio
@@ -184,15 +184,15 @@ class TestLgtmImageController:
         # Assert - レスポンス構造を検証
         content = json.loads(bytes(result.body))
         assert isinstance(content, dict)
-        assert "LgtmImages" in content
-        assert isinstance(content["LgtmImages"], list)
-        assert len(content["LgtmImages"]) > 0
+        assert "lgtmImages" in content
+        assert isinstance(content["lgtmImages"], list)
+        assert len(content["lgtmImages"]) > 0
 
         # Assert - デフォルトのlimit(9)で正しい数の画像を返すことを検証
-        assert len(content["LgtmImages"]) == 9
+        assert len(content["lgtmImages"]) == 9
 
         # Assert - 各アイテムの構造を検証
-        for item in content["LgtmImages"]:
+        for item in content["lgtmImages"]:
             assert "id" in item
             assert "url" in item
             assert isinstance(item["id"], str)
@@ -231,9 +231,9 @@ class TestLgtmImageController:
             # Assert
             assert isinstance(result, JSONResponse)
             content = json.loads(bytes(result.body))
-            assert "LgtmImages" in content
-            assert len(content["LgtmImages"]) > 0
-            for item in content["LgtmImages"]:
+            assert "lgtmImages" in content
+            assert len(content["lgtmImages"]) > 0
+            for item in content["lgtmImages"]:
                 assert item["url"].startswith(f"https://{base_url}")
 
     @pytest.mark.asyncio
