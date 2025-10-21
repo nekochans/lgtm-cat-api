@@ -35,7 +35,7 @@ class TestLgtmImageController:
         assert result.status_code == 200
 
         # Assert - レスポンス構造を検証
-        content = json.loads(result.body)
+        content = json.loads(bytes(result.body))
         assert isinstance(content, dict)
         assert "LgtmImages" in content
         assert isinstance(content["LgtmImages"], list)
@@ -83,7 +83,7 @@ class TestLgtmImageController:
 
             # Assert
             assert isinstance(result, JSONResponse)
-            content = json.loads(result.body)
+            content = json.loads(bytes(result.body))
             assert "LgtmImages" in content
             assert len(content["LgtmImages"]) > 0
             for item in content["LgtmImages"]:
@@ -109,7 +109,7 @@ class TestLgtmImageController:
         # Assert
         assert isinstance(result, JSONResponse)
         assert result.status_code == 404
-        content = json.loads(result.body)
+        content = json.loads(bytes(result.body))
         assert "error" in content
         assert content["error"] == "Insufficient LGTM images available"
 
@@ -131,7 +131,7 @@ class TestLgtmImageController:
         # Assert
         assert isinstance(result, JSONResponse)
         assert result.status_code == 404
-        content = json.loads(result.body)
+        content = json.loads(bytes(result.body))
         assert "error" in content
         assert content["error"] == "Insufficient LGTM images available"
 
@@ -156,6 +156,6 @@ class TestLgtmImageController:
         # Assert
         assert isinstance(result, JSONResponse)
         assert result.status_code == 500
-        content = json.loads(result.body)
+        content = json.loads(bytes(result.body))
         assert "error" in content
         assert "Internal server error" in content["error"]
