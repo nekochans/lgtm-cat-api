@@ -6,13 +6,20 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config import get_lgtm_images_base_url
+from src.config import get_lgtm_images_base_url, get_upload_s3_bucket_name
 from src.domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
 from src.infrastructure.database import create_db_session
 from src.infrastructure.lgtm_image_repository import LgtmImageRepository
+from src.domain.repository.s3_repository_interface import S3RepositoryInterface
+from src.domain.repository.unique_id_generator_interface import (
+    UniqueIdGeneratorInterface,
+)
+from src.infrastructure.s3_repository import S3Repository
+from src.infrastructure.uuid_generator import UuidGenerator
 from src.presentation.controller.lgtm_image_controller import LgtmImageController
+from src.presentation.controller.lgtm_image_request import LgtmImageCreateRequest
 
 router = APIRouter()
 
@@ -21,6 +28,61 @@ def create_lgtm_image_repository(
     session: Annotated[AsyncSession, Depends(create_db_session)],
 ) -> LgtmImageRepositoryInterface:
     return LgtmImageRepository(session)
+
+
+def create_s3_repository(
+    bucket_name: str = Depends(get_upload_s3_bucket_name),
+) -> S3RepositoryInterface:
+    return S3Repository(bucket_name)
+
+
+def create_id_generator() -> UniqueIdGeneratorInterface:
+    return UuidGenerator()
+
+
+@router.post(
+    "/lgtm-images",
+    summary="LGTM画像を作成",
+    description="base64エンコードされた画像をS3にアップロードし、URLを返します。",
+    response_description="アップロードされた画像のURL",
+    tags=["LGTM Images"],
+    status_code=202,
+    responses={
+        202: {
+            "description": "受理された（アップロード処理中）",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "imageUrl": "https://lgtm-images.lgtmeow.com/2024/01/15/14/5947f291-a46e-453c-a230-0d756d7174cb.webp"
+                    }
+                }
+            },
+        },
+        422: {
+            "description": "無効な画像拡張子",
+            "content": {
+                "application/json": {
+                    "example": {"error": "Invalid image extension: .gif"}
+                }
+            },
+        },
+        500: {
+            "description": "サーバーエラー",
+            "content": {
+                "application/json": {"example": {"error": "Internal server error"}}
+            },
+        },
+    },
+)
+async def create_lgtm_image(
+    request_body: LgtmImageCreateRequest,
+    s3_repository: Annotated[S3RepositoryInterface, Depends(create_s3_repository)],
+    id_generator: Annotated[UniqueIdGeneratorInterface, Depends(create_id_generator)],
+    base_url: str = Depends(get_lgtm_images_base_url),
+) -> JSONResponse:
+    return await LgtmImageController.create(
+        s3_repository, id_generator, base_url, request_body
+    )
 
 
 @router.get(
