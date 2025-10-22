@@ -53,3 +53,28 @@ class LgtmImageRepository(LgtmImageRepositoryInterface):
 
         logger.info("Found LGTM images", extra={"count": len(image_objects)})
         return image_objects
+
+    async def find_recently_created(self, limit: int) -> list[LgtmImageObject]:
+        logger.info("Finding recently created LGTM images", extra={"limit": limit})
+
+        result = await self._session.execute(
+            select(LgtmImageModel)
+            .order_by(LgtmImageModel.created_at.desc())
+            .limit(limit)
+        )
+        models = result.scalars().all()
+
+        # DBモデルをドメインエンティティに変換
+        image_objects = [
+            LgtmImageObject(
+                id=LgtmImageId(model.id),
+                path=model.path,
+                filename=model.filename,
+            )
+            for model in models
+        ]
+
+        logger.info(
+            "Found recently created LGTM images", extra={"count": len(image_objects)}
+        )
+        return image_objects

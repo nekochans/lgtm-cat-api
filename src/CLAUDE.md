@@ -125,7 +125,7 @@ from src.presentation.controller.response_helper import create_json_response
 from src.presentation.controller.lgtm_image_response import LgtmImageRandomListResponse
 
 # レスポンスモデルを作成
-response = LgtmImageRandomListResponse(LgtmImages=image_items)
+response = LgtmImageRandomListResponse(lgtmImages=image_items)
 
 # create_json_response関数でJSONResponseを生成
 return create_json_response(response)

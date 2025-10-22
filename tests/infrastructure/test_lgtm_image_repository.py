@@ -119,3 +119,82 @@ async def test_find_by_ids_partial_match(test_db_session: AsyncSession) -> None:
     assert len(result) == 1
     assert result[0]["filename"] == "test1.webp"
     assert result[0]["path"] == "/images/test1.webp"
+
+
+@pytest.mark.asyncio
+async def test_find_recently_created_returns_limited_count(
+    test_db_session: AsyncSession,
+) -> None:
+    """find_recently_createdメソッドでlimit指定時に指定件数が返されることのテスト."""
+    # テストデータを異なるcreated_atで挿入
+    from datetime import timedelta
+
+    now = datetime.now()
+    images = []
+    for i in range(1, 6):
+        # 各画像を1秒ずつ古くする
+        image = LgtmImageModel(
+            filename=f"test{i}.webp",
+            path=f"/images/test{i}.webp",
+            created_at=now - timedelta(seconds=i),
+            updated_at=now,
+        )
+        test_db_session.add(image)
+        images.append(image)
+
+    await test_db_session.commit()
+
+    # リポジトリを作成してテスト
+    repository = LgtmImageRepository(test_db_session)
+    result = await repository.find_recently_created(limit=3)
+
+    # 検証：3件返される
+    assert len(result) == 3
+
+    # 検証：created_atの降順（新しい順）でソートされている
+    # test1が最新、test2が次、test3が3番目に新しい
+    assert result[0]["filename"] == "test1.webp"
+    assert result[1]["filename"] == "test2.webp"
+    assert result[2]["filename"] == "test3.webp"
+
+
+@pytest.mark.asyncio
+async def test_find_recently_created_returns_all_when_limit_exceeds_total(
+    test_db_session: AsyncSession,
+) -> None:
+    """find_recently_createdメソッドでlimitが総数より大きい場合に全件返されることのテスト."""
+    # テストデータを異なるcreated_atで挿入
+    from datetime import timedelta
+
+    now = datetime.now()
+    images = []
+    for i in range(1, 6):
+        # 各画像を1秒ずつ古くする
+        image = LgtmImageModel(
+            filename=f"test{i}.webp",
+            path=f"/images/test{i}.webp",
+            created_at=now - timedelta(seconds=i),
+            updated_at=now,
+        )
+        test_db_session.add(image)
+        images.append(image)
+
+    await test_db_session.commit()
+
+    # リポジトリを作成してテスト
+    repository = LgtmImageRepository(test_db_session)
+    result_all = await repository.find_recently_created(limit=10)
+
+    # 検証：存在する5件のみ返される
+    assert len(result_all) == 5
+
+
+@pytest.mark.asyncio
+async def test_find_recently_created_no_data(test_db_session: AsyncSession) -> None:
+    """find_recently_createdメソッドでデータが0件の場合のテスト."""
+    # リポジトリを作成してテスト
+    repository = LgtmImageRepository(test_db_session)
+    result = await repository.find_recently_created(limit=5)
+
+    # 検証：空のリストが返される
+    assert result == []

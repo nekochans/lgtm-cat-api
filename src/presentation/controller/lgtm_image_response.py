@@ -15,5 +15,13 @@ class LgtmImageRandomListResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     lgtm_images: list[LgtmImageItem] = Field(
-        ..., alias="LgtmImages", description="LGTM画像のリスト"
+        ..., alias="lgtmImages", description="LGTM画像のリスト"
+    )
+
+
+class LgtmImageRecentlyCreatedListResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    lgtm_images: list[LgtmImageItem] = Field(
+        ..., alias="lgtmImages", description="最近作成されたLGTM画像のリスト"
     )

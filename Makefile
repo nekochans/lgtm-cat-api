@@ -1,4 +1,4 @@
-.PHONY: lint fix format typecheck
+.PHONY: lint fix format typecheck test run
 
 lint:
 	uv run ruff check
@@ -14,3 +14,6 @@ typecheck:
 
 test:
 	uv run pytest -vv -s src/ tests/
+
+run:
+	uv run python src/main.py

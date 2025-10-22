@@ -77,10 +77,16 @@ export LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 ### 開発サーバーの起動
 
 ```bash
-uv run python src/main.py
+make run
 ```
 
 開発サーバーが http://0.0.0.0:8000 で起動します（自動リロード有効）。
+
+または直接実行することもできます：
+
+```bash
+uv run python src/main.py
+```
 
 ### コード品質チェック
 
@@ -94,7 +100,7 @@ make fix
 # コードをフォーマット
 make format
 
-# 型チェック（strictモード）
+# 型チェック（strictモード、src/とtests/が対象）
 make typecheck
 
 # すべてのテストを実行
@@ -105,7 +111,7 @@ make test
 
 ### コード品質要件
 
-- **型チェック**: mypyを厳格モード（`--strict`）で実行。すべての関数に戻り値の型を含む適切な型アノテーションが必要
+- **型チェック**: mypyを厳格モード（`--strict`）で`src/`と`tests/`ディレクトリに対して実行。すべての関数に戻り値の型を含む適切な型アノテーションが必要
 - **リント・フォーマット**: Ruffを使用。CIはリントチェックとフォーマットチェックの両方を強制
 - **CI**: すべてのPRは以下のジョブをパスする必要があります
   - ci (Ruffリントチェック)

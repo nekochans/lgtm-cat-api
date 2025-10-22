@@ -11,10 +11,14 @@ from src.log.logger import get_logger
 from src.presentation.controller.lgtm_image_response import (
     LgtmImageItem,
     LgtmImageRandomListResponse,
+    LgtmImageRecentlyCreatedListResponse,
 )
 from src.presentation.controller.response_helper import create_json_response
 from src.usecase.extract_random_lgtm_images_usecase import (
     ExtractRandomLgtmImagesUsecase,
+)
+from src.usecase.retrieve_recently_created_lgtm_images_usecase import (
+    RetrieveRecentlyCreatedLgtmImagesUsecase,
 )
 
 logger = get_logger(__name__)
@@ -36,7 +40,43 @@ class LgtmImageController:
                 LgtmImageItem(id=image["id"], url=image["url"])  # type: ignore[arg-type]
                 for image in images
             ]
-            response = LgtmImageRandomListResponse(LgtmImages=image_items)
+            response = LgtmImageRandomListResponse(lgtmImages=image_items)
+            return create_json_response(response)
+        except ErrRecordCount:
+            logger.error("Insufficient LGTM images available")
+            return JSONResponse(
+                status_code=404,
+                content={"error": "Insufficient LGTM images available"},
+            )
+        except Exception as e:
+            logger.error(
+                "Unexpected error occurred",
+                exc_info=True,
+                extra={"error_type": type(e).__name__, "error_message": str(e)},
+            )
+            return JSONResponse(
+                status_code=500,
+                content={"error": f"Internal server error: {str(e)}"},
+            )
+
+    @staticmethod
+    async def exec_recently_created(
+        repository: LgtmImageRepositoryInterface,
+        base_url: str,
+    ) -> JSONResponse:
+        logger.info("Retrieving recently created LGTM images")
+
+        try:
+            images: list[
+                LgtmImage
+            ] = await RetrieveRecentlyCreatedLgtmImagesUsecase.execute(
+                repository, base_url
+            )
+            image_items = [
+                LgtmImageItem(id=image["id"], url=image["url"])  # type: ignore[arg-type]
+                for image in images
+            ]
+            response = LgtmImageRecentlyCreatedListResponse(lgtmImages=image_items)
             return create_json_response(response)
         except ErrRecordCount:
             logger.error("Insufficient LGTM images available")
