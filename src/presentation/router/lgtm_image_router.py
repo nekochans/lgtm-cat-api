@@ -12,7 +12,9 @@ from src.domain.repository.lgtm_image_repository_interface import (
 )
 from src.infrastructure.database import create_db_session
 from src.infrastructure.lgtm_image_repository import LgtmImageRepository
-from src.domain.repository.s3_repository_interface import S3RepositoryInterface
+from src.domain.repository.object_storage_repository_interface import (
+    ObjectStorageRepositoryInterface,
+)
 from src.domain.repository.unique_id_generator_interface import (
     UniqueIdGeneratorInterface,
 )
@@ -30,9 +32,9 @@ def create_lgtm_image_repository(
     return LgtmImageRepository(session)
 
 
-def create_s3_repository(
+def create_object_storage_repository(
     bucket_name: str = Depends(get_upload_s3_bucket_name),
-) -> S3RepositoryInterface:
+) -> ObjectStorageRepositoryInterface:
     return S3Repository(bucket_name)
 
 
@@ -76,12 +78,14 @@ def create_id_generator() -> UniqueIdGeneratorInterface:
 )
 async def create_lgtm_image(
     request_body: LgtmImageCreateRequest,
-    s3_repository: Annotated[S3RepositoryInterface, Depends(create_s3_repository)],
+    object_storage_repository: Annotated[
+        ObjectStorageRepositoryInterface, Depends(create_object_storage_repository)
+    ],
     id_generator: Annotated[UniqueIdGeneratorInterface, Depends(create_id_generator)],
     base_url: str = Depends(get_lgtm_images_base_url),
 ) -> JSONResponse:
     return await LgtmImageController.create(
-        s3_repository, id_generator, base_url, request_body
+        object_storage_repository, id_generator, base_url, request_body
     )
 
 

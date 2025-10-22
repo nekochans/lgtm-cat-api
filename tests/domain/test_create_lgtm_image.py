@@ -5,11 +5,11 @@ from datetime import datetime, timezone
 import pytest
 
 from src.domain.create_lgtm_image import (
-    UploadS3Param,
+    UploadObjectStorageDto,
     UploadedLgtmImage,
-    build_s3_prefix,
+    build_object_prefix,
     can_convert_image_extension,
-    create_upload_s3_param,
+    create_upload_object_strage_dto,
     create_uploaded_lgtm_image,
 )
 
@@ -26,36 +26,36 @@ def test_can_convert_image_extension_invalid(ext: str) -> None:
     assert can_convert_image_extension(ext) is False
 
 
-def test_build_s3_prefix() -> None:
-    """S3プレフィックスが正しく生成されることを確認（東京時間）."""
+def test_build_object_prefix() -> None:
+    """オブジェクトプレフィックスが正しく生成されることを確認（東京時間）."""
     # Arrange
     # UTC時間: 2024-01-15 05:30:00 (JST: 2024-01-15 14:30:00)
     dt_utc = datetime(2024, 1, 15, 5, 30, 0, tzinfo=timezone.utc)
 
     # Act
-    result = build_s3_prefix(dt_utc)
+    result = build_object_prefix(dt_utc)
 
     # Assert
     # 東京時間（UTC+9）で14時になる
     assert result == "2024/01/15/14/"
 
 
-def test_build_s3_prefix_midnight() -> None:
-    """深夜の時刻でS3プレフィックスが正しく生成されることを確認."""
+def test_build_object_prefix_midnight() -> None:
+    """深夜の時刻でオブジェクトプレフィックスが正しく生成されることを確認."""
     # Arrange
     # UTC時間: 2024-01-14 15:00:00 (JST: 2024-01-15 00:00:00)
     dt_utc = datetime(2024, 1, 14, 15, 0, 0, tzinfo=timezone.utc)
 
     # Act
-    result = build_s3_prefix(dt_utc)
+    result = build_object_prefix(dt_utc)
 
     # Assert
     # 東京時間（UTC+9）で日付が変わる
     assert result == "2024/01/15/00/"
 
 
-def test_create_upload_s3_param() -> None:
-    """S3アップロードパラメータが正しく生成されることを確認."""
+def test_create_upload_object_strage_dto() -> None:
+    """アップロードパラメータが正しく生成されることを確認."""
     # Arrange
     body = b"test image data"
     prefix = "2024/01/15/14/"
@@ -63,7 +63,7 @@ def test_create_upload_s3_param() -> None:
     image_extension = ".png"
 
     # Act
-    result = create_upload_s3_param(body, prefix, image_name, image_extension)
+    result = create_upload_object_strage_dto(body, prefix, image_name, image_extension)
 
     # Assert
     assert result["body"] == body
@@ -99,10 +99,10 @@ def test_uploaded_lgtm_image_type() -> None:
     assert image["url"] == "https://lgtm-images.lgtmeow.com/test.webp"
 
 
-def test_upload_s3_param_type() -> None:
-    """UploadS3Paramが正しい型であることを確認."""
+def test_upload_object_strage_dto_type() -> None:
+    """UploadObjectStorageDtoが正しい型であることを確認."""
     # Arrange & Act
-    param: UploadS3Param = UploadS3Param(
+    param: UploadObjectStorageDto = UploadObjectStorageDto(
         body=b"test data", image_extension=".png", key="test/path/image.png"
     )
 

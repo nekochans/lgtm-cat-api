@@ -27,7 +27,9 @@ from src.usecase.retrieve_recently_created_lgtm_images_usecase import (
 )
 
 if TYPE_CHECKING:
-    from src.domain.repository.s3_repository_interface import S3RepositoryInterface
+    from src.domain.repository.object_storage_repository_interface import (
+        ObjectStorageRepositoryInterface,
+    )
     from src.domain.repository.unique_id_generator_interface import (
         UniqueIdGeneratorInterface,
     )
@@ -38,7 +40,7 @@ logger = get_logger(__name__)
 class LgtmImageController:
     @staticmethod
     async def create(
-        s3_repository: "S3RepositoryInterface",
+        object_storage_repository: "ObjectStorageRepositoryInterface",
         id_generator: "UniqueIdGeneratorInterface",
         base_url: str,
         request_body: LgtmImageCreateRequest,
@@ -47,7 +49,7 @@ class LgtmImageController:
 
         try:
             uploaded_image = await CreateLgtmImageUsecase.execute(
-                s3_repository=s3_repository,
+                object_storage_repository=object_storage_repository,
                 id_generator=id_generator,
                 base_url=base_url,
                 image=request_body.image,

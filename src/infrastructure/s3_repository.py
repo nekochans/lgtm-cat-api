@@ -4,18 +4,21 @@ from typing import Any
 
 import aioboto3
 
-from src.domain.create_lgtm_image import UploadS3Param
+from src.domain.repository.object_storage_repository_interface import (
+    ObjectStorageRepositoryInterface,
+)
+from src.domain.create_lgtm_image import UploadObjectStorageDto
 from src.log.logger import get_logger
 
 logger = get_logger(__name__)
 
 
-class S3Repository:
+class S3Repository(ObjectStorageRepositoryInterface):
     def __init__(self, bucket_name: str) -> None:
         self.bucket_name = bucket_name
         self.session = aioboto3.Session()
 
-    async def upload(self, param: UploadS3Param) -> None:
+    async def upload(self, param: UploadObjectStorageDto) -> None:
         try:
             async with self.session.client("s3") as s3_client:
                 extra_args: dict[str, Any] = {

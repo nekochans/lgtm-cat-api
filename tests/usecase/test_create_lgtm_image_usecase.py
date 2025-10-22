@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from src.domain.create_lgtm_image import UploadS3Param
+from src.domain.create_lgtm_image import UploadObjectStorageDto
 from src.usecase.create_lgtm_image_usecase import CreateLgtmImageUsecase
 
 
@@ -13,8 +13,8 @@ from src.usecase.create_lgtm_image_usecase import CreateLgtmImageUsecase
 async def test_create_lgtm_image_usecase_success() -> None:
     """CreateLgtmImageUsecaseが正常に実行されることを確認."""
     # Arrange
-    mock_s3_repository = Mock()
-    mock_s3_repository.upload = AsyncMock()
+    object_storage_repository = Mock()
+    object_storage_repository.upload = AsyncMock()
 
     mock_id_generator = Mock()
     mock_id_generator.generate = Mock(return_value="test-uuid-123")
@@ -27,7 +27,7 @@ async def test_create_lgtm_image_usecase_success() -> None:
 
     # Act
     result = await CreateLgtmImageUsecase.execute(
-        s3_repository=mock_s3_repository,
+        object_storage_repository=object_storage_repository,
         id_generator=mock_id_generator,
         base_url=cdn_domain,
         image=encoded_image,
@@ -40,12 +40,12 @@ async def test_create_lgtm_image_usecase_success() -> None:
     assert "test-uuid-123" in result["url"]
     assert result["url"].endswith(".webp")
 
-    # S3リポジトリのuploadが1回呼ばれたことを確認
-    mock_s3_repository.upload.assert_called_once()
+    # リポジトリのuploadが1回呼ばれたことを確認
+    object_storage_repository.upload.assert_called_once()
 
     # uploadに渡されたパラメータを確認
-    call_args = mock_s3_repository.upload.call_args
-    upload_param: UploadS3Param = call_args[0][0]
+    call_args = object_storage_repository.upload.call_args
+    upload_param: UploadObjectStorageDto = call_args[0][0]
     assert upload_param["body"] == test_image_data
     assert upload_param["image_extension"] == ".png"
     assert "test-uuid-123.png" in upload_param["key"]
@@ -55,8 +55,8 @@ async def test_create_lgtm_image_usecase_success() -> None:
 async def test_create_lgtm_image_usecase_decodes_base64() -> None:
     """base64データが正しくデコードされることを確認."""
     # Arrange
-    mock_s3_repository = Mock()
-    mock_s3_repository.upload = AsyncMock()
+    object_storage_repository = Mock()
+    object_storage_repository.upload = AsyncMock()
 
     mock_id_generator = Mock()
     mock_id_generator.generate = Mock(return_value="test-uuid-123")
@@ -69,7 +69,7 @@ async def test_create_lgtm_image_usecase_decodes_base64() -> None:
 
     # Act
     result = await CreateLgtmImageUsecase.execute(
-        s3_repository=mock_s3_repository,
+        object_storage_repository=object_storage_repository,
         id_generator=mock_id_generator,
         base_url=base_url,
         image=encoded,
@@ -78,9 +78,9 @@ async def test_create_lgtm_image_usecase_decodes_base64() -> None:
 
     # Assert
     assert "url" in result
-    mock_s3_repository.upload.assert_called_once()
+    object_storage_repository.upload.assert_called_once()
 
     # デコードされたデータが正しく渡されていることを確認
-    call_args = mock_s3_repository.upload.call_args
-    upload_param: UploadS3Param = call_args[0][0]
+    call_args = object_storage_repository.upload.call_args
+    upload_param: UploadObjectStorageDto = call_args[0][0]
     assert upload_param["body"] == test_data.encode()

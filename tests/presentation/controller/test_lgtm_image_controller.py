@@ -316,8 +316,8 @@ class TestLgtmImageController:
     async def test_create_success_with_valid_extensions(self, extension: str) -> None:
         """正常系: 有効な拡張子で正しく画像を作成できる."""
         # Arrange
-        mock_s3_repository = Mock()
-        mock_s3_repository.upload = AsyncMock()
+        object_storage_repository = Mock()
+        object_storage_repository.upload = AsyncMock()
 
         mock_id_generator = Mock()
         mock_id_generator.generate = Mock(return_value="test-uuid-789")
@@ -333,7 +333,7 @@ class TestLgtmImageController:
 
         # Act
         result = await LgtmImageController.create(
-            s3_repository=mock_s3_repository,
+            object_storage_repository=object_storage_repository,
             id_generator=mock_id_generator,
             base_url=base_url,
             request_body=request_body,
@@ -349,8 +349,8 @@ class TestLgtmImageController:
         assert "test-uuid-789" in content["imageUrl"]
         assert content["imageUrl"].endswith(".webp")
 
-        # S3リポジトリのuploadが呼ばれたことを確認
-        mock_s3_repository.upload.assert_called_once()
+        # リポジトリのuploadが呼ばれたことを確認
+        object_storage_repository.upload.assert_called_once()
 
     def test_create_raises_error_with_invalid_extension(self) -> None:
         """異常系: 無効な拡張子でPydantic ValidationErrorが発生する."""
@@ -369,12 +369,14 @@ class TestLgtmImageController:
         assert "Invalid image extension" in str(errors[0]["msg"])
 
     @pytest.mark.asyncio
-    async def test_create_raises_error_with_s3_failure(self) -> None:
-        """異常系: S3アップロード失敗で500エラーを返す."""
+    async def test_create_raises_error_with_object_strage_failure(self) -> None:
+        """異常系: アップロード失敗で500エラーを返す."""
         # Arrange
-        mock_s3_repository = Mock()
-        # S3エラーをシミュレート
-        mock_s3_repository.upload = AsyncMock(side_effect=Exception("S3 upload failed"))
+        object_storage_repository = Mock()
+        # エラーをシミュレート
+        object_storage_repository.upload = AsyncMock(
+            side_effect=Exception("object strage upload failed")
+        )
 
         mock_id_generator = Mock()
         mock_id_generator.generate = Mock(return_value="test-uuid-error")
@@ -390,7 +392,7 @@ class TestLgtmImageController:
 
         # Act
         result = await LgtmImageController.create(
-            s3_repository=mock_s3_repository,
+            object_storage_repository=object_storage_repository,
             id_generator=mock_id_generator,
             base_url=base_url,
             request_body=request_body,

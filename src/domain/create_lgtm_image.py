@@ -8,7 +8,7 @@ class UploadedLgtmImage(TypedDict):
     url: Required[str]
 
 
-class UploadS3Param(TypedDict):
+class UploadObjectStorageDto(TypedDict):
     body: Required[bytes]
     image_extension: Required[str]
     key: Required[str]
@@ -18,7 +18,7 @@ def can_convert_image_extension(ext: str) -> bool:
     return ext in {".png", ".jpg", ".jpeg"}
 
 
-def build_s3_prefix(dt: datetime) -> str:
+def build_object_prefix(dt: datetime) -> str:
     from datetime import timedelta
 
     jst = timezone(timedelta(hours=9))
@@ -28,12 +28,12 @@ def build_s3_prefix(dt: datetime) -> str:
     return dt_tokyo.strftime("%Y/%m/%d/%H/")
 
 
-def create_upload_s3_param(
+def create_upload_object_strage_dto(
     body: bytes, prefix: str, image_name: str, image_extension: str
-) -> UploadS3Param:
+) -> UploadObjectStorageDto:
     upload_key = f"{prefix}{image_name}{image_extension}"
 
-    return UploadS3Param(
+    return UploadObjectStorageDto(
         body=body,
         image_extension=image_extension,
         key=upload_key,
