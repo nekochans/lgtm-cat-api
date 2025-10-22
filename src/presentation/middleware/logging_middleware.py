@@ -7,7 +7,6 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.responses import Response
 
 from src.log.logger import get_logger
-from src.log.request_id import generate_request_id, set_request_id
 
 logger = get_logger(__name__)
 
@@ -16,10 +15,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        # X-Request-IdヘッダーからリクエストIDを取得、なければ生成
-        request_id = request.headers.get("X-Request-Id") or generate_request_id()
-        set_request_id(request_id)
-
         # リクエスト受信ログ
         logger.info(
             "Request received",
