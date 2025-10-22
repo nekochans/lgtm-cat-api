@@ -48,6 +48,9 @@ cp .envrc.example .envrc
 # LGTM画像のベースURL
 export LGTM_IMAGES_BASE_URL=
 
+# LGTM画像のアップロード先S3バケット
+export UPLOAD_S3_BUCKET_NAME=
+
 # PlanetScale接続情報
 export DATABASE_USER=
 export DATABASE_PASSWORD=

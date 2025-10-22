@@ -2,6 +2,7 @@
 
 import uvicorn
 from fastapi import FastAPI, Request, Response
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -19,6 +20,21 @@ app = FastAPI(title="LGTM Cat API")
 
 
 # 例外ハンドラの登録（X-Request-Idヘッダーを追加）
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> Response:
+    """バリデーション例外ハンドラ - X-Request-Idヘッダーを追加"""
+    response = JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
+    request_id = get_request_id()
+    if request_id:
+        response.headers["X-Request-Id"] = request_id
+    return response
+
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: Exception) -> Response:
     """HTTP例外ハンドラ - X-Request-Idヘッダーを追加"""

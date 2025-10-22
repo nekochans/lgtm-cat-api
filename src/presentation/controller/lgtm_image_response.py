@@ -25,3 +25,11 @@ class LgtmImageRecentlyCreatedListResponse(BaseModel):
     lgtm_images: list[LgtmImageItem] = Field(
         ..., alias="lgtmImages", description="最近作成されたLGTM画像のリスト"
     )
+
+
+class LgtmImageCreateResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    image_url: HttpUrl = Field(
+        ..., alias="imageUrl", description="アップロードされた画像のURL"
+    )
