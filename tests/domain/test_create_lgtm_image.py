@@ -9,7 +9,7 @@ from src.domain.create_lgtm_image import (
     UploadedLgtmImage,
     build_object_prefix,
     can_convert_image_extension,
-    create_upload_object_strage_dto,
+    create_upload_object_storage_dto,
     create_uploaded_lgtm_image,
 )
 
@@ -63,7 +63,7 @@ def test_create_upload_object_strage_dto() -> None:
     image_extension = ".png"
 
     # Act
-    result = create_upload_object_strage_dto(body, prefix, image_name, image_extension)
+    result = create_upload_object_storage_dto(body, prefix, image_name, image_extension)
 
     # Assert
     assert result["body"] == body

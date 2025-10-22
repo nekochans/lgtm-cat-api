@@ -6,14 +6,12 @@ from datetime import datetime, timezone
 from src.domain.create_lgtm_image import (
     UploadedLgtmImage,
     build_object_prefix,
-    create_upload_object_strage_dto,
+    create_upload_object_storage_dto,
     create_uploaded_lgtm_image,
+    generate_lgtm_image_name,
 )
 from src.domain.repository.object_storage_repository_interface import (
     ObjectStorageRepositoryInterface,
-)
-from src.domain.repository.unique_id_generator_interface import (
-    UniqueIdGeneratorInterface,
 )
 from src.log.logger import get_logger
 
@@ -24,7 +22,6 @@ class CreateLgtmImageUsecase:
     @staticmethod
     async def execute(
         object_storage_repository: ObjectStorageRepositoryInterface,
-        id_generator: UniqueIdGeneratorInterface,
         base_url: str,
         image: str,
         image_extension: str,
@@ -46,10 +43,10 @@ class CreateLgtmImageUsecase:
         prefix = build_object_prefix(now_utc)
 
         # 画像名を生成
-        image_name = id_generator.generate()
+        image_name = generate_lgtm_image_name()
 
         # アップロードパラメータを作成
-        upload_param = create_upload_object_strage_dto(
+        upload_param = create_upload_object_storage_dto(
             body=decoded_image,
             prefix=prefix,
             image_name=image_name,

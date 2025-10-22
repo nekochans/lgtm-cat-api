@@ -2,7 +2,7 @@
 
 import base64
 import json
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastapi.responses import JSONResponse
@@ -319,9 +319,6 @@ class TestLgtmImageController:
         object_storage_repository = Mock()
         object_storage_repository.upload = AsyncMock()
 
-        mock_id_generator = Mock()
-        mock_id_generator.generate = Mock(return_value="test-uuid-789")
-
         base_url = "storage.example.com"
 
         test_image_data = b"test image"
@@ -332,12 +329,15 @@ class TestLgtmImageController:
         )
 
         # Act
-        result = await LgtmImageController.create(
-            object_storage_repository=object_storage_repository,
-            id_generator=mock_id_generator,
-            base_url=base_url,
-            request_body=request_body,
-        )
+        with patch(
+            "src.usecase.create_lgtm_image_usecase.generate_lgtm_image_name",
+            return_value="test-uuid-789",
+        ):
+            result = await LgtmImageController.create(
+                object_storage_repository=object_storage_repository,
+                base_url=base_url,
+                request_body=request_body,
+            )
 
         # Assert
         assert isinstance(result, JSONResponse)
@@ -369,7 +369,7 @@ class TestLgtmImageController:
         assert "Invalid image extension" in str(errors[0]["msg"])
 
     @pytest.mark.asyncio
-    async def test_create_raises_error_with_object_strage_failure(self) -> None:
+    async def test_create_raises_error_with_object_storage_failure(self) -> None:
         """異常系: アップロード失敗で500エラーを返す."""
         # Arrange
         object_storage_repository = Mock()
@@ -377,9 +377,6 @@ class TestLgtmImageController:
         object_storage_repository.upload = AsyncMock(
             side_effect=Exception("object strage upload failed")
         )
-
-        mock_id_generator = Mock()
-        mock_id_generator.generate = Mock(return_value="test-uuid-error")
 
         base_url = "example.com"
 
@@ -391,12 +388,15 @@ class TestLgtmImageController:
         )
 
         # Act
-        result = await LgtmImageController.create(
-            object_storage_repository=object_storage_repository,
-            id_generator=mock_id_generator,
-            base_url=base_url,
-            request_body=request_body,
-        )
+        with patch(
+            "src.usecase.create_lgtm_image_usecase.generate_lgtm_image_name",
+            return_value="test-uuid-error",
+        ):
+            result = await LgtmImageController.create(
+                object_storage_repository=object_storage_repository,
+                base_url=base_url,
+                request_body=request_body,
+            )
 
         # Assert
         assert isinstance(result, JSONResponse)

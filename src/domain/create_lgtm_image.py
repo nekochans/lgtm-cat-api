@@ -1,5 +1,6 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
+import uuid
 from datetime import datetime, timezone
 from typing import Required, TypedDict
 
@@ -12,6 +13,10 @@ class UploadObjectStorageDto(TypedDict):
     body: Required[bytes]
     image_extension: Required[str]
     key: Required[str]
+
+
+def generate_lgtm_image_name() -> str:
+    return str(uuid.uuid4())
 
 
 def can_convert_image_extension(ext: str) -> bool:
@@ -28,7 +33,7 @@ def build_object_prefix(dt: datetime) -> str:
     return dt_tokyo.strftime("%Y/%m/%d/%H/")
 
 
-def create_upload_object_strage_dto(
+def create_upload_object_storage_dto(
     body: bytes, prefix: str, image_name: str, image_extension: str
 ) -> UploadObjectStorageDto:
     upload_key = f"{prefix}{image_name}{image_extension}"

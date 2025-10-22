@@ -30,9 +30,6 @@ if TYPE_CHECKING:
     from src.domain.repository.object_storage_repository_interface import (
         ObjectStorageRepositoryInterface,
     )
-    from src.domain.repository.unique_id_generator_interface import (
-        UniqueIdGeneratorInterface,
-    )
 
 logger = get_logger(__name__)
 
@@ -41,7 +38,6 @@ class LgtmImageController:
     @staticmethod
     async def create(
         object_storage_repository: "ObjectStorageRepositoryInterface",
-        id_generator: "UniqueIdGeneratorInterface",
         base_url: str,
         request_body: LgtmImageCreateRequest,
     ) -> JSONResponse:
@@ -50,7 +46,6 @@ class LgtmImageController:
         try:
             uploaded_image = await CreateLgtmImageUsecase.execute(
                 object_storage_repository=object_storage_repository,
-                id_generator=id_generator,
                 base_url=base_url,
                 image=request_body.image,
                 image_extension=request_body.image_extension,
