@@ -5,9 +5,9 @@ from datetime import datetime
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.lgtm_image import LgtmImageId
-from src.infrastructure.lgtm_image_repository import LgtmImageRepository
-from src.infrastructure.models import LgtmImageModel
+from domain.lgtm_image import LgtmImageId
+from infrastructure.lgtm_image_repository import LgtmImageRepository
+from infrastructure.models import LgtmImageModel
 
 
 async def insert_test_lgtm_images(

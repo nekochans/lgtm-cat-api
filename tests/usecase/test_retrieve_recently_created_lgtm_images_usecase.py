@@ -3,10 +3,10 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.lgtm_image import DEFAULT_RANDOM_IMAGES_LIMIT
-from src.domain.lgtm_image_errors import ErrRecordCount
-from src.infrastructure.lgtm_image_repository import LgtmImageRepository
-from src.usecase.retrieve_recently_created_lgtm_images_usecase import (
+from domain.lgtm_image import DEFAULT_RANDOM_IMAGES_LIMIT
+from domain.lgtm_image_errors import ErrRecordCount
+from infrastructure.lgtm_image_repository import LgtmImageRepository
+from usecase.retrieve_recently_created_lgtm_images_usecase import (
     RetrieveRecentlyCreatedLgtmImagesUsecase,
 )
 from tests.fixtures.test_data_helpers import insert_test_lgtm_images
@@ -77,7 +77,7 @@ class TestRetrieveRecentlyCreatedLgtmImagesUsecase:
         """正常系: 結果が作成日時の降順（新しい順）で返される."""
         from datetime import datetime, timedelta, timezone
 
-        from src.infrastructure.models import LgtmImageModel
+        from infrastructure.models import LgtmImageModel
 
         # Arrange - テストデータを異なるcreated_atで挿入
         now = datetime.now(timezone.utc)

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from src.domain.create_lgtm_image import (
+from domain.create_lgtm_image import (
     UploadObjectStorageDto,
     UploadedLgtmImage,
     build_object_prefix,

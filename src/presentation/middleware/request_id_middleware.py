@@ -4,7 +4,7 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
-from src.log.request_id import generate_request_id, set_request_id
+from log.request_id import generate_request_id, set_request_id
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):

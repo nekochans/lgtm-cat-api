@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from src.domain.create_lgtm_image import UploadObjectStorageDto
-from src.usecase.create_lgtm_image_usecase import CreateLgtmImageUsecase
+from domain.create_lgtm_image import UploadObjectStorageDto
+from usecase.create_lgtm_image_usecase import CreateLgtmImageUsecase
 
 
 @pytest.mark.asyncio
@@ -24,7 +24,7 @@ async def test_create_lgtm_image_usecase_success() -> None:
 
     # Act
     with patch(
-        "src.usecase.create_lgtm_image_usecase.generate_lgtm_image_name",
+        "usecase.create_lgtm_image_usecase.generate_lgtm_image_name",
         return_value="test-uuid-123",
     ):
         result = await CreateLgtmImageUsecase.execute(
@@ -66,7 +66,7 @@ async def test_create_lgtm_image_usecase_decodes_base64() -> None:
 
     # Act
     with patch(
-        "src.usecase.create_lgtm_image_usecase.generate_lgtm_image_name",
+        "usecase.create_lgtm_image_usecase.generate_lgtm_image_name",
         return_value="test-uuid-123",
     ):
         result = await CreateLgtmImageUsecase.execute(

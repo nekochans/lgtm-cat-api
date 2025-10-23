@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from src.presentation.controller.health_check_controller import HealthCheckController
+from presentation.controller.health_check_controller import HealthCheckController
 
 
 router = APIRouter()

@@ -5,10 +5,10 @@ import random
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.lgtm_image import DEFAULT_RANDOM_IMAGES_LIMIT
-from src.domain.lgtm_image_errors import ErrRecordCount
-from src.infrastructure.lgtm_image_repository import LgtmImageRepository
-from src.usecase.extract_random_lgtm_images_usecase import (
+from domain.lgtm_image import DEFAULT_RANDOM_IMAGES_LIMIT
+from domain.lgtm_image_errors import ErrRecordCount
+from infrastructure.lgtm_image_repository import LgtmImageRepository
+from usecase.extract_random_lgtm_images_usecase import (
     ExtractRandomLgtmImagesUsecase,
 )
 from tests.fixtures.test_data_helpers import insert_test_lgtm_images

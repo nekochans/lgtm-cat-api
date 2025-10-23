@@ -4,11 +4,11 @@ from typing import Any
 
 import aioboto3
 
-from src.domain.repository.object_storage_repository_interface import (
+from domain.repository.object_storage_repository_interface import (
     ObjectStorageRepositoryInterface,
 )
-from src.domain.create_lgtm_image import UploadObjectStorageDto
-from src.log.logger import get_logger
+from domain.create_lgtm_image import UploadObjectStorageDto
+from log.logger import get_logger
 
 logger = get_logger(__name__)
 

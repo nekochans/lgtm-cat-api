@@ -1,7 +1,7 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
-from src.domain.lgtm_image import LgtmImageId
-from src.domain.lgtm_image_object import LgtmImageObject, create_lgtm_image
+from domain.lgtm_image import LgtmImageId
+from domain.lgtm_image_object import LgtmImageObject, create_lgtm_image
 
 
 def test_lgtm_image_object_creation() -> None:

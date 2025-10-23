@@ -2,7 +2,7 @@
 
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from src.presentation.controller.response_helper import create_json_response
+from presentation.controller.response_helper import create_json_response
 
 
 class HealthCheckResponse(BaseModel):

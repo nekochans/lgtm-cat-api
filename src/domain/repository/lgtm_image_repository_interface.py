@@ -2,8 +2,8 @@
 
 from typing import Protocol
 
-from src.domain.lgtm_image import LgtmImageId
-from src.domain.lgtm_image_object import LgtmImageObject
+from domain.lgtm_image import LgtmImageId
+from domain.lgtm_image_object import LgtmImageObject
 
 
 class LgtmImageRepositoryInterface(Protocol):

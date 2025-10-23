@@ -4,8 +4,8 @@ import logging
 import os
 from typing import Optional
 
-from src.log.request_id import get_request_id
-from src.log.formatter import JsonFormatter
+from log.request_id import get_request_id
+from log.formatter import JsonFormatter
 
 
 class RequestIdFilter(logging.Filter):

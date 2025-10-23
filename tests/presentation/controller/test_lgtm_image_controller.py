@@ -10,9 +10,9 @@ from pydantic import ValidationError
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.infrastructure.lgtm_image_repository import LgtmImageRepository
-from src.presentation.controller.lgtm_image_controller import LgtmImageController
-from src.presentation.controller.lgtm_image_request import LgtmImageCreateRequest
+from infrastructure.lgtm_image_repository import LgtmImageRepository
+from presentation.controller.lgtm_image_controller import LgtmImageController
+from presentation.controller.lgtm_image_request import LgtmImageCreateRequest
 from tests.fixtures.test_data_helpers import insert_test_lgtm_images
 
 
@@ -330,7 +330,7 @@ class TestLgtmImageController:
 
         # Act
         with patch(
-            "src.usecase.create_lgtm_image_usecase.generate_lgtm_image_name",
+            "usecase.create_lgtm_image_usecase.generate_lgtm_image_name",
             return_value="test-uuid-789",
         ):
             result = await LgtmImageController.create(
@@ -389,7 +389,7 @@ class TestLgtmImageController:
 
         # Act
         with patch(
-            "src.usecase.create_lgtm_image_usecase.generate_lgtm_image_name",
+            "usecase.create_lgtm_image_usecase.generate_lgtm_image_name",
             return_value="test-uuid-error",
         ):
             result = await LgtmImageController.create(
