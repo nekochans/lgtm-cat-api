@@ -1,7 +1,7 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 from typing import Required, TypedDict
 
-from src.domain.lgtm_image import LgtmImage, LgtmImageId
+from domain.lgtm_image import LgtmImage, LgtmImageId
 
 
 class LgtmImageObject(TypedDict):

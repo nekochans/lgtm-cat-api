@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.infrastructure.models import LgtmImageModel
+from infrastructure.models import LgtmImageModel
 
 
 async def insert_test_lgtm_images(

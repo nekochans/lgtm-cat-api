@@ -3,17 +3,17 @@
 import base64
 from datetime import datetime, timezone
 
-from src.domain.create_lgtm_image import (
+from domain.create_lgtm_image import (
     UploadedLgtmImage,
     build_object_prefix,
     create_upload_object_storage_dto,
     create_uploaded_lgtm_image,
     generate_lgtm_image_name,
 )
-from src.domain.repository.object_storage_repository_interface import (
+from domain.repository.object_storage_repository_interface import (
     ObjectStorageRepositoryInterface,
 )
-from src.log.logger import get_logger
+from log.logger import get_logger
 
 logger = get_logger(__name__)
 

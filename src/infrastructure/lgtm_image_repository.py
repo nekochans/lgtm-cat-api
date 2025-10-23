@@ -3,13 +3,13 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.lgtm_image import LgtmImageId
-from src.domain.lgtm_image_object import LgtmImageObject
-from src.domain.repository.lgtm_image_repository_interface import (
+from domain.lgtm_image import LgtmImageId
+from domain.lgtm_image_object import LgtmImageObject
+from domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
-from src.infrastructure.models import LgtmImageModel
-from src.log.logger import get_logger
+from infrastructure.models import LgtmImageModel
+from log.logger import get_logger
 
 logger = get_logger(__name__)
 

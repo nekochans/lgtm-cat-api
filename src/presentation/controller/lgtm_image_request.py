@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from src.domain.create_lgtm_image import can_convert_image_extension
+from domain.create_lgtm_image import can_convert_image_extension
 
 
 class LgtmImageCreateRequest(BaseModel):

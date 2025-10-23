@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from src.domain.create_lgtm_image import UploadObjectStorageDto
+from domain.create_lgtm_image import UploadObjectStorageDto
 
 
 class ObjectStorageRepositoryInterface(Protocol):

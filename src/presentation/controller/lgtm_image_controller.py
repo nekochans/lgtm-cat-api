@@ -4,30 +4,30 @@ from typing import TYPE_CHECKING
 
 from fastapi.responses import JSONResponse
 
-from src.domain.lgtm_image import LgtmImage
-from src.domain.lgtm_image_errors import ErrInvalidImageExtension, ErrRecordCount
-from src.domain.repository.lgtm_image_repository_interface import (
+from domain.lgtm_image import LgtmImage
+from domain.lgtm_image_errors import ErrInvalidImageExtension, ErrRecordCount
+from domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
-from src.log.logger import get_logger
-from src.presentation.controller.lgtm_image_request import LgtmImageCreateRequest
-from src.presentation.controller.lgtm_image_response import (
+from log.logger import get_logger
+from presentation.controller.lgtm_image_request import LgtmImageCreateRequest
+from presentation.controller.lgtm_image_response import (
     LgtmImageCreateResponse,
     LgtmImageItem,
     LgtmImageRandomListResponse,
     LgtmImageRecentlyCreatedListResponse,
 )
-from src.presentation.controller.response_helper import create_json_response
-from src.usecase.create_lgtm_image_usecase import CreateLgtmImageUsecase
-from src.usecase.extract_random_lgtm_images_usecase import (
+from presentation.controller.response_helper import create_json_response
+from usecase.create_lgtm_image_usecase import CreateLgtmImageUsecase
+from usecase.extract_random_lgtm_images_usecase import (
     ExtractRandomLgtmImagesUsecase,
 )
-from src.usecase.retrieve_recently_created_lgtm_images_usecase import (
+from usecase.retrieve_recently_created_lgtm_images_usecase import (
     RetrieveRecentlyCreatedLgtmImagesUsecase,
 )
 
 if TYPE_CHECKING:
-    from src.domain.repository.object_storage_repository_interface import (
+    from domain.repository.object_storage_repository_interface import (
         ObjectStorageRepositoryInterface,
     )
 

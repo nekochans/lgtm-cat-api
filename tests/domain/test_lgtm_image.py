@@ -1,7 +1,7 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
-from src.domain.lgtm_image import LgtmImage
-from src.domain.lgtm_image import DEFAULT_RANDOM_IMAGES_LIMIT
+from domain.lgtm_image import LgtmImage
+from domain.lgtm_image import DEFAULT_RANDOM_IMAGES_LIMIT
 
 
 def test_default_random_images_limit_value() -> None:

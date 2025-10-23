@@ -6,13 +6,13 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from src.presentation.router import health_check_router
-from src.config import get_log_level
-from src.log.logger import setup_logging
-from src.log.request_id import get_request_id
-from src.presentation.middleware.logging_middleware import LoggingMiddleware
-from src.presentation.middleware.request_id_middleware import RequestIdMiddleware
-from src.presentation.router import lgtm_image_router
+from presentation.router import health_check_router
+from config import get_log_level
+from log.logger import setup_logging
+from log.request_id import get_request_id
+from presentation.middleware.logging_middleware import LoggingMiddleware
+from presentation.middleware.request_id_middleware import RequestIdMiddleware
+from presentation.router import lgtm_image_router
 
 # ロギング設定の初期化
 setup_logging(log_level=get_log_level())
@@ -79,7 +79,7 @@ app.include_router(health_check_router.router)
 
 def start() -> None:
     uvicorn.run(
-        "src.main:app",
+        "main:app",
         host="0.0.0.0",
         port=8000,
         reload=True,

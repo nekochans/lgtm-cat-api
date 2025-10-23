@@ -2,13 +2,13 @@
 
 import random
 
-from src.domain.lgtm_image import DEFAULT_RANDOM_IMAGES_LIMIT, LgtmImage
-from src.domain.lgtm_image_errors import ErrRecordCount
-from src.domain.lgtm_image_object import create_lgtm_image
-from src.domain.repository.lgtm_image_repository_interface import (
+from domain.lgtm_image import DEFAULT_RANDOM_IMAGES_LIMIT, LgtmImage
+from domain.lgtm_image_errors import ErrRecordCount
+from domain.lgtm_image_object import create_lgtm_image
+from domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
-from src.log.logger import get_logger
+from log.logger import get_logger
 
 logger = get_logger(__name__)
 
