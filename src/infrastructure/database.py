@@ -36,12 +36,7 @@ def get_database_url() -> URL:
 
 
 def get_ssl_context() -> ssl.SSLContext:
-    ssl_ca_cert = os.getenv("SSL_CA_CERT")
-    if not ssl_ca_cert:
-        raise RuntimeError("SSL_CA_CERT environment variable is not set")
-
     ssl_context = ssl.create_default_context()
-    ssl_context.load_verify_locations(cafile=ssl_ca_cert)
     ssl_context.check_hostname = True
 
     return ssl_context

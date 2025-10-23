@@ -56,7 +56,6 @@ export DATABASE_USER=
 export DATABASE_PASSWORD=
 export DATABASE_HOST=
 export DATABASE_NAME=
-export SSL_CA_CERT=
 
 # PlanetScale API設定（テスト用）
 export PLANETSCALE_ORG_NAME=
