@@ -6,6 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from src.presentation.router import health_check_router
 from src.config import get_log_level
 from src.log.logger import setup_logging
 from src.log.request_id import get_request_id
@@ -73,6 +74,7 @@ app.add_middleware(RequestIdMiddleware)
 
 # ルーターの登録
 app.include_router(lgtm_image_router.router)
+app.include_router(health_check_router.router)
 
 
 def start() -> None:
