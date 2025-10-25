@@ -730,7 +730,7 @@ dev = [
     { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "ruff", specifier = ">=0.12.0" },
     { name = "types-aioboto3", extras = ["s3"], specifier = ">=15.4.0" },
-    { name = "types-python-jose", specifier = ">=3.3.0" },
+    { name = "types-python-jose", specifier = ">=3.5.0" },
 ]
 
 [[package]]
