@@ -5,3 +5,15 @@ class ErrRecordCount(Exception):
 
 class ErrInvalidImageExtension(Exception):
     pass
+
+
+class ErrInvalidToken(Exception):
+    pass
+
+
+class ErrJwksFetchFailed(Exception):
+    pass
+
+
+class ErrExpiredToken(Exception):
+    pass

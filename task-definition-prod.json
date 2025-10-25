@@ -57,6 +57,14 @@
         {
           "name": "DATABASE_USER",
           "valueFrom": "/prod/lgtm-cat/api/DB_USERNAME"
+        },
+        {
+          "name": "COGNITO_USER_POOL_ID",
+          "valueFrom": "/prod/lgtm-cat/api/COGNITO_USER_POOL_ID"
+        },
+        {
+          "name": "COGNITO_APP_CLIENT_ID",
+          "valueFrom": "/prod/lgtm-cat/api/COGNITO_APP_CLIENT_ID"
         }
       ],
       "ulimits": [
