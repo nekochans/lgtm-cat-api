@@ -215,11 +215,28 @@ class TestCognitoTokenVerifierRepository:
     ) -> None:
         """HTTP取得エラー時にErrJwksFetchFailedを発生させる."""
         # Arrange
-        with patch("httpx.AsyncClient") as mock_client_class:
-            mock_client = AsyncMock()
-            mock_client.__aenter__.return_value = mock_client
-            mock_client.get.side_effect = Exception("Network error")
-            mock_client_class.return_value = mock_client
+        from unittest.mock import MagicMock
+
+        with patch("aiohttp.ClientSession") as mock_session_class:
+            # レスポンスのモック
+            mock_response = MagicMock()
+            # raise_for_statusを同期関数として設定（aiohttpのraise_for_statusは同期メソッド）
+            mock_response.raise_for_status = MagicMock(
+                side_effect=Exception("Network error")
+            )
+
+            # getメソッドのコンテキストマネージャーモック
+            mock_get_cm = MagicMock()
+            mock_get_cm.__aenter__ = AsyncMock(return_value=mock_response)
+            mock_get_cm.__aexit__ = AsyncMock(return_value=None)
+
+            # セッションのモック
+            mock_session = MagicMock()
+            mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+            mock_session.__aexit__ = AsyncMock(return_value=None)
+            mock_session.get = MagicMock(return_value=mock_get_cm)
+
+            mock_session_class.return_value = mock_session
 
             # Act & Assert
             with pytest.raises(ErrJwksFetchFailed):

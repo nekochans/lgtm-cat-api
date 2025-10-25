@@ -5,7 +5,7 @@ import logging
 import time
 from typing import Any, cast
 
-import httpx
+import aiohttp
 from jose import JWTError, ExpiredSignatureError
 from jose import jwt as jose_jwt
 
@@ -122,11 +122,12 @@ class CognitoTokenVerifierRepository(TokenVerifierRepositoryInterface):
 
     async def _fetch_jwks(self) -> dict[str, Any]:
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(self.keys_url, timeout=10.0)
-                response.raise_for_status()
-                return cast(dict[str, Any], response.json())
-        except httpx.HTTPError as e:
+            timeout = aiohttp.ClientTimeout(total=10.0)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(self.keys_url) as response:
+                    response.raise_for_status()
+                    return cast(dict[str, Any], await response.json())
+        except aiohttp.ClientError as e:
             logger.error(f"Failed to fetch JWKS: {e}")
             raise ErrJwksFetchFailed("Failed to fetch JWKS")
         except Exception as e:
