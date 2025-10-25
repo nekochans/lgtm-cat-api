@@ -11,8 +11,8 @@ from domain.lgtm_image_errors import (
     ErrInvalidToken,
     ErrJwksFetchFailed,
 )
-from domain.repository.token_verifier_repository_interface import (
-    TokenVerifierRepositoryInterface,
+from domain.repository.jwt_token_verifier_repository_interface import (
+    JwtTokenVerifierRepositoryInterface,
 )
 from presentation.dependencies.auth import verify_token
 
@@ -22,7 +22,7 @@ class TestVerifyToken:
     async def test_verify_token_success_with_valid_bearer_token(self) -> None:
         """正常系: 有効なBearerトークンで検証に成功し、Bearerプレフィックスを正しく除去する."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         expected_payload: dict[str, Any] = {
             "sub": "user123",
             "email": "test@example.com",
@@ -56,7 +56,7 @@ class TestVerifyToken:
     ) -> None:
         """正常系: 大文字小文字が混在するBearerスキームでも検証に成功する."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         expected_payload: dict[str, Any] = {"sub": "user123"}
         mock_verifier.verify.return_value = expected_payload
         token_value = "valid_token_123"
@@ -72,7 +72,7 @@ class TestVerifyToken:
     async def test_verify_token_handles_whitespace_around_token(self) -> None:
         """正常系: トークンの前後に空白がある場合は削除して検証する."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         expected_payload: dict[str, Any] = {"sub": "user123"}
         mock_verifier.verify.return_value = expected_payload
 
@@ -93,7 +93,7 @@ class TestVerifyToken:
     ) -> None:
         """異常系: Bearerプレフィックスがない場合は401エラーを返す."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         authorization = "InvalidToken"
 
         # Act & Assert
@@ -110,7 +110,7 @@ class TestVerifyToken:
     ) -> None:
         """異常系: Authorizationヘッダーが空の場合は401エラーを返す."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         authorization = ""
 
         # Act & Assert
@@ -127,7 +127,7 @@ class TestVerifyToken:
     ) -> None:
         """異常系: トークン部分が空白のみの場合は401エラーを返す."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         authorization = "Bearer    "  # 空白のみ
 
         # Act & Assert
@@ -142,7 +142,7 @@ class TestVerifyToken:
     async def test_verify_token_raises_401_when_bearer_without_token(self) -> None:
         """異常系: "Bearer"のみでトークンがない場合は401エラーを返す."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         authorization = "Bearer"
 
         # Act & Assert
@@ -157,7 +157,7 @@ class TestVerifyToken:
     async def test_verify_token_raises_401_when_token_is_invalid(self) -> None:
         """異常系: トークンが無効な場合は401エラーを返す."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         mock_verifier.verify.side_effect = ErrInvalidToken("Invalid token format")
 
         authorization = "Bearer malformed_token"
@@ -174,7 +174,7 @@ class TestVerifyToken:
     async def test_verify_token_raises_401_when_token_is_expired(self) -> None:
         """異常系: トークンが期限切れの場合は401エラーを返す."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         mock_verifier.verify.side_effect = ErrExpiredToken("Token has expired")
 
         authorization = "Bearer expired_token"
@@ -193,7 +193,7 @@ class TestVerifyToken:
     ) -> None:
         """異常系: 予期しない例外が発生した場合は401エラーを返す."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         mock_verifier.verify.side_effect = RuntimeError("Unexpected error")
 
         authorization = "Bearer some_token"
@@ -210,7 +210,7 @@ class TestVerifyToken:
     async def test_verify_token_raises_503_when_jwks_fetch_fails(self) -> None:
         """異常系: JWKS取得に失敗した場合は503エラーを返す."""
         # Arrange
-        mock_verifier = AsyncMock(spec=TokenVerifierRepositoryInterface)
+        mock_verifier = AsyncMock(spec=JwtTokenVerifierRepositoryInterface)
         mock_verifier.verify.side_effect = ErrJwksFetchFailed("Failed to fetch JWKS")
 
         authorization = "Bearer valid_token"

@@ -14,8 +14,8 @@ from domain.lgtm_image_errors import (
     ErrInvalidToken,
     ErrJwksFetchFailed,
 )
-from domain.repository.token_verifier_repository_interface import (
-    TokenVerifierRepositoryInterface,
+from domain.repository.jwt_token_verifier_repository_interface import (
+    JwtTokenVerifierRepositoryInterface,
 )
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ def _build_cognito_issuer(region: str, user_pool_id: str) -> str:
     return f"https://cognito-idp.{region}.amazonaws.com/{user_pool_id}"
 
 
-class CognitoTokenVerifierRepository(TokenVerifierRepositoryInterface):
+class CognitoTokenVerifierRepository(JwtTokenVerifierRepositoryInterface):
     def __init__(self, region: str, user_pool_id: str, app_client_id: str) -> None:
         self.region = region
         self.user_pool_id = user_pool_id

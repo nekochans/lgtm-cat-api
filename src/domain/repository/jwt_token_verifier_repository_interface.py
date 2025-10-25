@@ -3,5 +3,5 @@
 from typing import Any, Protocol
 
 
-class TokenVerifierRepositoryInterface(Protocol):
+class JwtTokenVerifierRepositoryInterface(Protocol):
     async def verify(self, token: str) -> dict[str, Any]: ...

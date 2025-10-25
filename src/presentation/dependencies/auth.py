@@ -14,8 +14,8 @@ from domain.lgtm_image_errors import (
     ErrInvalidToken,
     ErrJwksFetchFailed,
 )
-from domain.repository.token_verifier_repository_interface import (
-    TokenVerifierRepositoryInterface,
+from domain.repository.jwt_token_verifier_repository_interface import (
+    JwtTokenVerifierRepositoryInterface,
 )
 from infrastructure.cognito_token_verifier_repository import (
     CognitoTokenVerifierRepository,
@@ -26,13 +26,13 @@ def create_token_verifier_repository(
     region: str = Depends(get_cognito_region),
     user_pool_id: str = Depends(get_cognito_user_pool_id),
     app_client_id: str = Depends(get_cognito_app_client_id),
-) -> TokenVerifierRepositoryInterface:
+) -> JwtTokenVerifierRepositoryInterface:
     return CognitoTokenVerifierRepository(region, user_pool_id, app_client_id)
 
 
 async def verify_token(
     token_verifier: Annotated[
-        TokenVerifierRepositoryInterface, Depends(create_token_verifier_repository)
+        JwtTokenVerifierRepositoryInterface, Depends(create_token_verifier_repository)
     ],
     authorization: str = Header(..., description="Bearer token"),
 ) -> dict[str, Any]:
