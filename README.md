@@ -11,6 +11,10 @@ LGTMeow用のFastAPIベースのWeb APIです。
 - **FastAPI 0.115.0+** - 高速なPython Webフレームワーク
 - **Uvicorn 0.30.6+** - ASGIサーバー（開発サーバーとして使用）
 
+### 認証
+- **python-jose 3.3.0+** - JWT（JSON Web Token）の生成・検証
+- **AWS Cognito** - ユーザー認証とアクセストークン管理
+
 ### 開発ツール
 - **uv** - 高速なPythonパッケージマネージャー
 - **Ruff 0.6.8+** - 高速なPythonリンター・フォーマッター
@@ -70,6 +74,11 @@ export TEST_DATABASE_ROOT_PASSWORD=
 
 # ログ設定
 export LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+# AWS Cognito設定（JWT認証）
+export COGNITO_REGION=ap-northeast-1
+export COGNITO_USER_POOL_ID=
+export COGNITO_APP_CLIENT_ID=
 ```
 
 **注意**: `.envrc` ファイルは `.gitignore` に含まれているため、リポジトリにコミットされません。
@@ -127,11 +136,23 @@ APIはシンプルなRESTパターンに従い、3つのエンドポイントを
 
 ### エンドポイント
 
+**すべてのエンドポイントで認証が必須です。**
+
 1. **GET /lgtm-images** - ランダムなLGTM画像を返す
 2. **POST /lgtm-images** - 新しいLGTM画像を作成（base64画像と拡張子を受け取る）
 3. **GET /lgtm-images/recently-created** - 最近作成されたLGTM画像を返す
 
 レスポンスモデルはPydanticのBaseModelを使用して定義されており、JSONフィールドにはキャメルケースを使用します（例: `imageUrl`, `imageExtension`）。
+
+### 認証
+
+すべてのエンドポイントでAWS Cognito JWTトークンによる認証が必要です。
+
+- **認証方式**: Bearer Token（JWT）
+- **ヘッダー形式**: `Authorization: Bearer <access_token>`
+- **トークン取得**: AWS Cognitoから発行されたアクセストークンを使用
+- **エラーレスポンス**:
+  - 401 Unauthorized - トークンが無効、期限切れ、または未提供の場合
 
 ## プロジェクト構造
 

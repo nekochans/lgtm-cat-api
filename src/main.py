@@ -1,5 +1,6 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
+import sys
 import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
@@ -7,12 +8,19 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from presentation.router import health_check_router
-from config import get_log_level
+from config import get_log_level, validate_required_config
 from log.logger import setup_logging
 from log.request_id import get_request_id
 from presentation.middleware.logging_middleware import LoggingMiddleware
 from presentation.middleware.request_id_middleware import RequestIdMiddleware
 from presentation.router import lgtm_image_router
+
+# 必須の環境変数を検証（起動時にfail-fast）
+try:
+    validate_required_config()
+except RuntimeError as e:
+    print(f"ERROR: {e}", file=sys.stderr)
+    sys.exit(1)
 
 # ロギング設定の初期化
 setup_logging(log_level=get_log_level())

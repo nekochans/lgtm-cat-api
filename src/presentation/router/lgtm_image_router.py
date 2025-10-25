@@ -1,23 +1,27 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config import get_lgtm_images_base_url, get_upload_s3_bucket_name
+from config import (
+    get_lgtm_images_base_url,
+    get_upload_s3_bucket_name,
+)
 from domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
-from infrastructure.database import create_db_session
-from infrastructure.lgtm_image_repository import LgtmImageRepository
 from domain.repository.object_storage_repository_interface import (
     ObjectStorageRepositoryInterface,
 )
+from infrastructure.database import create_db_session
+from infrastructure.lgtm_image_repository import LgtmImageRepository
 from infrastructure.s3_repository import S3Repository
 from presentation.controller.lgtm_image_controller import LgtmImageController
 from presentation.controller.lgtm_image_request import LgtmImageCreateRequest
+from presentation.dependencies.auth import verify_token
 
 router = APIRouter()
 
@@ -52,6 +56,14 @@ def create_object_storage_repository(
                 }
             },
         },
+        401: {
+            "description": "認証エラー",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Invalid authorization header"}
+                }
+            },
+        },
         422: {
             "description": "無効な画像拡張子",
             "content": {
@@ -74,6 +86,7 @@ async def create_lgtm_image(
         ObjectStorageRepositoryInterface, Depends(create_object_storage_repository)
     ],
     base_url: str = Depends(get_lgtm_images_base_url),
+    token_payload: dict[str, Any] = Depends(verify_token),
 ) -> JSONResponse:
     return await LgtmImageController.create(
         object_storage_repository, base_url, request_body
@@ -105,7 +118,15 @@ async def create_lgtm_image(
                     }
                 }
             },
-        }
+        },
+        401: {
+            "description": "認証エラー",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Invalid authorization header"}
+                }
+            },
+        },
     },
 )
 async def extract_random_lgtm_images(
@@ -113,6 +134,7 @@ async def extract_random_lgtm_images(
         LgtmImageRepositoryInterface, Depends(create_lgtm_image_repository)
     ],
     base_url: str = Depends(get_lgtm_images_base_url),
+    token_payload: dict[str, Any] = Depends(verify_token),
 ) -> JSONResponse:
     return await LgtmImageController.exec(repository, base_url)
 
@@ -142,7 +164,15 @@ async def extract_random_lgtm_images(
                     }
                 }
             },
-        }
+        },
+        401: {
+            "description": "認証エラー",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Invalid authorization header"}
+                }
+            },
+        },
     },
 )
 async def retrieve_recently_created_lgtm_images(
@@ -150,5 +180,6 @@ async def retrieve_recently_created_lgtm_images(
         LgtmImageRepositoryInterface, Depends(create_lgtm_image_repository)
     ],
     base_url: str = Depends(get_lgtm_images_base_url),
+    token_payload: dict[str, Any] = Depends(verify_token),
 ) -> JSONResponse:
     return await LgtmImageController.exec_recently_created(repository, base_url)
