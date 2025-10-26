@@ -28,3 +28,7 @@ export LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 export COGNITO_REGION=ap-northeast-1
 export COGNITO_USER_POOL_ID=
 export COGNITO_APP_CLIENT_ID=
+
+# Sentry設定（エラー監視）
+export SENTRY_DSN=
+export SENTRY_ENVIRONMENT=
