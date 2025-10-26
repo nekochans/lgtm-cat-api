@@ -10,13 +10,13 @@ def test_lgtm_image_object_creation() -> None:
     image_obj = LgtmImageObject(
         id=LgtmImageId(1),
         path="2021/03/16/23",
-        filename="5947f291-a46e-453c-a230-0d756d7174cb.webp",
+        filename="5947f291-a46e-453c-a230-0d756d7174cb",
     )
 
     # Assert
     assert image_obj["id"] == LgtmImageId(1)
     assert image_obj["path"] == "2021/03/16/23"
-    assert image_obj["filename"] == "5947f291-a46e-453c-a230-0d756d7174cb.webp"
+    assert image_obj["filename"] == "5947f291-a46e-453c-a230-0d756d7174cb"
 
 
 def test_lgtm_image_object_equality() -> None:
@@ -25,17 +25,17 @@ def test_lgtm_image_object_equality() -> None:
     image_obj1 = LgtmImageObject(
         id=LgtmImageId(1),
         path="2021/03/16/23",
-        filename="test.webp",
+        filename="test",
     )
     image_obj2 = LgtmImageObject(
         id=LgtmImageId(1),
         path="2021/03/16/23",
-        filename="test.webp",
+        filename="test",
     )
     image_obj3 = LgtmImageObject(
         id=LgtmImageId(2),
         path="2021/03/16/23",
-        filename="test.webp",
+        filename="test",
     )
 
     # Act & Assert
@@ -49,7 +49,7 @@ def test_to_lgtm_image_conversion() -> None:
     image_obj = LgtmImageObject(
         id=LgtmImageId(1),
         path="2021/03/16/23",
-        filename="5947f291-a46e-453c-a230-0d756d7174cb.webp",
+        filename="5947f291-a46e-453c-a230-0d756d7174cb",
     )
     base_url = "lgtm-images.lgtmeow.com"
 
@@ -70,7 +70,7 @@ def test_to_lgtm_image_url_format() -> None:
     image_obj = LgtmImageObject(
         id=LgtmImageId(123),
         path="2024/12/31/10",
-        filename="test-image.webp",
+        filename="test-image",
     )
     base_url = "lgtm-images.lgtmeow.com"
 
