@@ -6,10 +6,12 @@ authors = [
     { name = "kobayashi-m42", email = "m42kobayashi@gmail.com" }
 ]
 dependencies = [
+    "aiohttp>=3.13.1",
     "aioboto3>=15.4.0",
     "asyncmy>=0.2.10",
     "fastapi>=0.115.0",
     "greenlet>=3.2.4",
+    "python-jose[cryptography]>=3.5.0",
     "sqlalchemy>=2.0.44",
     "uvicorn>=0.30.6",
 ]
@@ -30,9 +32,9 @@ dev = [
     "pytest>=8.4.2",
     "pytest-asyncio>=1.2.0",
     "pytest-cov>=4.1.0",
-    "aiohttp>=3.13.1",
     "cryptography>=46.0.3",
     "types-aioboto3[s3]>=15.4.0",
+    "types-python-jose>=3.5.0",
 ]
 
 [tool.hatch.metadata]
