@@ -17,6 +17,10 @@ LOG_LEVEL: Final[str] = os.getenv("LOG_LEVEL", "INFO")
 # AWS Cognito設定
 COGNITO_REGION: Final[str] = os.getenv("COGNITO_REGION", "ap-northeast-1")
 
+# Sentry設定
+SENTRY_DSN: Final[str] = os.getenv("SENTRY_DSN", "")
+SENTRY_ENVIRONMENT: Final[str] = os.getenv("SENTRY_ENVIRONMENT", "development")
+
 # 必須の環境変数（Noneを許可するが、起動時に検証が必要）
 _cognito_user_pool_id: Optional[str] = os.getenv("COGNITO_USER_POOL_ID")
 _cognito_app_client_id: Optional[str] = os.getenv("COGNITO_APP_CLIENT_ID")
@@ -64,3 +68,11 @@ def get_cognito_user_pool_id() -> str:
 
 def get_cognito_app_client_id() -> str:
     return COGNITO_APP_CLIENT_ID
+
+
+def get_sentry_dsn() -> str:
+    return SENTRY_DSN
+
+
+def get_sentry_environment() -> str:
+    return SENTRY_ENVIRONMENT

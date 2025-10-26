@@ -8,7 +8,13 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from presentation.router import health_check_router
-from config import get_log_level, validate_required_config
+from config import (
+    get_log_level,
+    get_sentry_dsn,
+    get_sentry_environment,
+    validate_required_config,
+)
+from sentry.initializer import capture_exception, init_sentry
 from log.logger import setup_logging
 from log.request_id import get_request_id
 from presentation.middleware.logging_middleware import LoggingMiddleware
@@ -24,6 +30,17 @@ except RuntimeError as e:
 
 # ロギング設定の初期化
 setup_logging(log_level=get_log_level())
+
+# Sentryの初期化
+# Sentryはエラー監視機能なので、初期化に失敗してもアプリケーションは継続起動する
+try:
+    init_sentry(
+        dsn=get_sentry_dsn(),
+        environment=get_sentry_environment(),
+    )
+except Exception as e:
+    print(f"WARNING: Failed to initialize Sentry: {e}", file=sys.stderr)
+    print("Application will continue without Sentry error monitoring.", file=sys.stderr)
 
 app = FastAPI(title="LGTM Cat API")
 
@@ -66,11 +83,15 @@ async def http_exception_handler(request: Request, exc: Exception) -> Response:
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception) -> Response:
     """一般例外ハンドラ - X-Request-Idヘッダーを追加"""
+    # Sentryに例外を送信
+    request_id = get_request_id()
+    extra_context = {"request_id": request_id} if request_id else None
+    capture_exception(exc, extra=extra_context)
+
     response = JSONResponse(
         status_code=500,
         content={"detail": "Internal Server Error"},
     )
-    request_id = get_request_id()
     if request_id:
         response.headers["X-Request-Id"] = request_id
     return response
