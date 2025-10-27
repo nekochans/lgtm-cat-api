@@ -111,4 +111,4 @@ jobs:
           SENTRY_PROJECT: "lgtm-cat-api"
         with:
           environment: production
-          version: ${{ env.RELEASE_VERSION }}
+          release: ${{ env.RELEASE_VERSION }}
