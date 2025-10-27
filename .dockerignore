@@ -47,6 +47,7 @@ Dockerfile
 docker/
 compose.yml
 .dockerignore
+!docker/nginx/config/
 
 # Development tools
 Makefile
