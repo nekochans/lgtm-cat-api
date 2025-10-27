@@ -15,6 +15,9 @@ LGTMeow用のFastAPIベースのWeb APIです。
 - **python-jose 3.3.0+** - JWT（JSON Web Token）の生成・検証
 - **AWS Cognito** - ユーザー認証とアクセストークン管理
 
+### エラー監視
+- **Sentry** - アプリケーションエラーの検知・可視化・通知
+
 ### 開発ツール
 - **uv** - 高速なPythonパッケージマネージャー
 - **Ruff 0.6.8+** - 高速なPythonリンター・フォーマッター
@@ -79,9 +82,24 @@ export LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 export COGNITO_REGION=ap-northeast-1
 export COGNITO_USER_POOL_ID=
 export COGNITO_APP_CLIENT_ID=
+
+# Sentry設定（エラー監視）
+export SENTRY_DSN=           # SentryのDSN（未設定時はSentry無効）
+export SENTRY_ENVIRONMENT=   # 実行環境名
 ```
 
 **注意**: `.envrc` ファイルは `.gitignore` に含まれているため、リポジトリにコミットされません。
+
+#### Sentryの設定
+
+アプリケーションのエラー監視を有効にするには、以下の環境変数を設定します。
+
+- **SENTRY_DSN**: SentryプロジェクトのDSN（Data Source Name）。この値が設定されていない場合、Sentryは無効化されます。
+- **SENTRY_ENVIRONMENT**: 実行環境の識別子（例: `development`, `staging`, `production`）。Sentryダッシュボードでエラーをフィルタリングする際に使用されます。
+
+サンプリングレートは環境に応じて自動設定されます：
+- **prod**: トレース 20%、プロファイル 10%
+- **その他の環境**: トレース 5%、プロファイル 1%
 
 ## 開発
 
@@ -164,6 +182,8 @@ src/
 ├── presentation/        # プレゼンテーション層（HTTPリクエスト/レスポンス処理）
 │   ├── router/         # FastAPI APIRouterを使ったルーティング定義
 │   └── controller/     # HTTPリクエストを処理するコントローラー
+├── log/                 # ロギング関連（横断的関心事）
+├── sentry/              # Sentryエラー監視（横断的関心事）
 └── main.py             # エントリーポイント
 ```
 

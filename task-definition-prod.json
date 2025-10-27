@@ -37,6 +37,10 @@
         {
           "name": "UPLOAD_S3_BUCKET_NAME",
           "value": "prod-lgtmeow-upload-images"
+        },
+        {
+          "name": "SENTRY_ENVIRONMENT",
+          "value": "production"
         }
       ],
       "mountPoints": [],
@@ -65,6 +69,10 @@
         {
           "name": "COGNITO_APP_CLIENT_ID",
           "valueFrom": "/prod/lgtm-cat/api/COGNITO_APP_CLIENT_ID"
+        },
+        {
+          "name": "SENTRY_DSN",
+          "valueFrom": "/prod/lgtm-cat/api/SENTRY_DSN"
         }
       ],
       "ulimits": [

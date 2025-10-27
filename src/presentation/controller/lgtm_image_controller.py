@@ -17,7 +17,10 @@ from presentation.controller.lgtm_image_response import (
     LgtmImageRandomListResponse,
     LgtmImageRecentlyCreatedListResponse,
 )
-from presentation.controller.response_helper import create_json_response
+from presentation.controller.response_helper import (
+    create_json_response,
+    create_error_response,
+)
 from usecase.create_lgtm_image_usecase import CreateLgtmImageUsecase
 from usecase.extract_random_lgtm_images_usecase import (
     ExtractRandomLgtmImagesUsecase,
@@ -59,15 +62,8 @@ class LgtmImageController:
                 content={"error": "Invalid image extension provided"},
             )
         except Exception as e:
-            logger.error(
-                "Unexpected error occurred",
-                exc_info=True,
-                extra={"error_type": type(e).__name__, "error_message": str(e)},
-            )
-            return JSONResponse(
-                status_code=500,
-                content={"error": "Internal server error occurred"},
-            )
+            logger.error(f"Error creating LGTM image: {e}")
+            return create_error_response(e)
 
     @staticmethod
     async def exec(
@@ -93,15 +89,8 @@ class LgtmImageController:
                 content={"error": "Insufficient LGTM images available"},
             )
         except Exception as e:
-            logger.error(
-                "Unexpected error occurred",
-                exc_info=True,
-                extra={"error_type": type(e).__name__, "error_message": str(e)},
-            )
-            return JSONResponse(
-                status_code=500,
-                content={"error": f"Internal server error: {str(e)}"},
-            )
+            logger.error(f"Error extracting random LGTM images: {e}")
+            return create_error_response(e)
 
     @staticmethod
     async def exec_recently_created(
@@ -129,12 +118,5 @@ class LgtmImageController:
                 content={"error": "Insufficient LGTM images available"},
             )
         except Exception as e:
-            logger.error(
-                "Unexpected error occurred",
-                exc_info=True,
-                extra={"error_type": type(e).__name__, "error_message": str(e)},
-            )
-            return JSONResponse(
-                status_code=500,
-                content={"error": f"Internal server error: {str(e)}"},
-            )
+            logger.error(f"Error retrieving recently created LGTM images: {e}")
+            return create_error_response(e)
