@@ -13,5 +13,5 @@ class LgtmImageObject(TypedDict):
 def create_lgtm_image(lgtm_image_object: LgtmImageObject, base_url: str) -> LgtmImage:
     return LgtmImage(
         id=str(lgtm_image_object["id"]),
-        url=f"https://{base_url}/{lgtm_image_object['path']}/{lgtm_image_object['filename']}",
+        url=f"https://{base_url}/{lgtm_image_object['path']}/{lgtm_image_object['filename']}.webp",
     )
