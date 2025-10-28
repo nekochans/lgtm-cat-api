@@ -1,5 +1,5 @@
 {
-  "family": "stg-lgtm-cat-api-v2",
+  "family": "stg-lgtm-cat-api",
   "taskRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/stg-lgtm-cat-api-ecs-task-role",
   "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/stg-lgtm-cat-api-ecs-task-execution-role",
   "networkMode": "awsvpc",

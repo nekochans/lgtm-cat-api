@@ -8,8 +8,8 @@ on:
 
 env:
   ENV: prod
-  ECR_REPOSITORY_NGINX: prod-lgtm-cat-api-v2-nginx
-  ECR_REPOSITORY_APP: prod-lgtm-cat-api-v2-app
+  ECR_REPOSITORY_NGINX: prod-lgtm-cat-api-nginx
+  ECR_REPOSITORY_APP: prod-lgtm-cat-api-app
 
 jobs:
   build:
@@ -88,7 +88,7 @@ jobs:
         with:
           task-definition: ${{ steps.task-def-app.outputs.task-definition }}
           wait-for-service-stability: true
-          service: ${{ env.ENV }}-lgtm-cat-api-v2
+          service: ${{ env.ENV }}-lgtm-cat-api
           cluster: ${{ env.ENV }}-lgtm-cat-api
 
       - name: Set release version
