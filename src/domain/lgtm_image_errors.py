@@ -17,3 +17,15 @@ class ErrJwksFetchFailed(Exception):
 
 class ErrExpiredToken(Exception):
     pass
+
+
+class ErrInvalidUrl(Exception):
+    pass
+
+
+class ErrImageFetchFailed(Exception):
+    pass
+
+
+class ErrUrlNotAccessible(Exception):
+    pass
