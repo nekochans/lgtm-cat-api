@@ -11,6 +11,7 @@ dependencies = [
     "asyncmy>=0.2.10",
     "fastapi>=0.115.0",
     "greenlet>=3.2.4",
+    "magika>=1.0.1",
     "python-jose[cryptography]>=3.5.0",
     "sqlalchemy>=2.0.44",
     "uvicorn>=0.30.6",
