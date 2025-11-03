@@ -20,8 +20,9 @@ def mime_type_to_extension(mime_type: str) -> str:
 
     extension = mime_to_ext.get(normalized_mime_type)
     if extension is None:
+        allowed_types = " or ".join(sorted(mime_to_ext.keys()))
         raise ErrInvalidImageExtension(
-            f"Unsupported MIME type: {normalized_mime_type}. Expected image/jpeg or image/png"
+            f"Unsupported MIME type: {normalized_mime_type}. Expected {allowed_types}"
         )
 
     return extension
