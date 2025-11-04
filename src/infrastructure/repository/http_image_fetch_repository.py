@@ -2,7 +2,6 @@
 
 import aiohttp
 from magika import Magika
-from urllib.parse import urlsplit, urlunsplit
 
 from domain.image_format import ALLOWED_IMAGE_MIME_TYPES
 from domain.lgtm_image_errors import (
@@ -16,15 +15,9 @@ from domain.repository.image_fetch_repository_interface import (
 )
 from infrastructure.validator.url_validator import validate_allowed_domain
 from log.logger import get_logger
+from log.url_sanitizer import sanitize_url_for_logging
 
 logger = get_logger(__name__)
-
-
-def _sanitize_url_for_logging(url: str) -> str:
-    parsed = urlsplit(url)
-    # クエリ文字列とフラグメントを空にして再構築
-    sanitized = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, "", ""))
-    return sanitized
 
 
 class HttpImageFetchRepository(ImageFetchRepositoryInterface):
@@ -36,7 +29,7 @@ class HttpImageFetchRepository(ImageFetchRepositoryInterface):
 
     async def fetch_image(self, url: str) -> FetchedImage:
         # クエリパラメータを除去したログ出力用URL（機密情報保護）
-        sanitized_url = _sanitize_url_for_logging(url)
+        sanitized_url = sanitize_url_for_logging(url)
 
         # SSRF対策のURL検証(許可されたドメインのみ許可)
         try:
@@ -58,7 +51,7 @@ class HttpImageFetchRepository(ImageFetchRepositoryInterface):
                     if 300 <= response.status < 400:
                         redirect_url = response.headers.get("Location")
                         sanitized_redirect = (
-                            _sanitize_url_for_logging(redirect_url)
+                            sanitize_url_for_logging(redirect_url)
                             if redirect_url
                             else "(no location)"
                         )

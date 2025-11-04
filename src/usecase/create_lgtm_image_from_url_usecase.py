@@ -17,6 +17,7 @@ from domain.repository.object_storage_repository_interface import (
     ObjectStorageRepositoryInterface,
 )
 from log.logger import get_logger
+from log.url_sanitizer import sanitize_url_for_logging
 
 logger = get_logger(__name__)
 
@@ -29,9 +30,12 @@ class CreateLgtmImageFromUrlUseCase:
         base_url: str,
         image_url: str,
     ) -> UploadedLgtmImage:
+        # URLをサニタイズ（クエリパラメータやトークンを除去）
+        safe_url = sanitize_url_for_logging(image_url)
+
         logger.info(
             "Executing CreateLgtmImageFromUrlUseCase",
-            extra={"image_url": image_url},
+            extra={"image_url": safe_url},
         )
 
         # 外部URLから画像を取得（MIMEタイプも含む）
@@ -40,7 +44,7 @@ class CreateLgtmImageFromUrlUseCase:
         logger.info(
             f"Successfully fetched image from URL ({len(fetched_image['data'])} bytes, type: {fetched_image['mime_type']})",
             extra={
-                "image_url": image_url,
+                "image_url": safe_url,
                 "size": len(fetched_image["data"]),
                 "mime_type": fetched_image["mime_type"],
             },
