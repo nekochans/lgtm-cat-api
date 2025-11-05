@@ -16,6 +16,7 @@ from domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
 from log.logger import get_logger
+from log.url_sanitizer import sanitize_url_for_logging
 from presentation.controller.lgtm_image_request import (
     LgtmImageCreateFromUrlRequest,
     LgtmImageCreateRequest,
@@ -87,9 +88,10 @@ class LgtmImageController:
         base_url: str,
         request_body: LgtmImageCreateFromUrlRequest,
     ) -> JSONResponse:
+        sanitized_url = sanitize_url_for_logging(request_body.image_url)
         logger.info(
             "Creating LGTM image from URL",
-            extra={"image_url": request_body.image_url},
+            extra={"image_url": sanitized_url},
         )
 
         try:
