@@ -29,6 +29,9 @@ export COGNITO_REGION=ap-northeast-1
 export COGNITO_USER_POOL_ID=
 export COGNITO_APP_CLIENT_ID=
 
+# 画像取得設定（URL画像取得機能用）
+export IMAGE_ALLOWED_DOMAIN=
+
 # Sentry設定（エラー監視）
 export SENTRY_DSN=
 export SENTRY_ENVIRONMENT=

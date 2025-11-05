@@ -24,10 +24,12 @@ SENTRY_ENVIRONMENT: Final[str] = os.getenv("SENTRY_ENVIRONMENT", "development")
 # 必須の環境変数（Noneを許可するが、起動時に検証が必要）
 _cognito_user_pool_id: Optional[str] = os.getenv("COGNITO_USER_POOL_ID")
 _cognito_app_client_id: Optional[str] = os.getenv("COGNITO_APP_CLIENT_ID")
+_image_allowed_domain: Optional[str] = os.getenv("IMAGE_ALLOWED_DOMAIN")
 
 # NOTE: これらの定数は validate_required_config() が成功した後のみ安全にアクセス可能
 COGNITO_USER_POOL_ID: Final[str] = _cognito_user_pool_id or ""
 COGNITO_APP_CLIENT_ID: Final[str] = _cognito_app_client_id or ""
+IMAGE_ALLOWED_DOMAIN: Final[str] = _image_allowed_domain or ""
 
 
 def validate_required_config() -> None:
@@ -38,6 +40,9 @@ def validate_required_config() -> None:
 
     if not _cognito_app_client_id:
         missing_vars.append("COGNITO_APP_CLIENT_ID")
+
+    if not _image_allowed_domain:
+        missing_vars.append("IMAGE_ALLOWED_DOMAIN")
 
     if missing_vars:
         error_msg = (
@@ -76,3 +81,23 @@ def get_sentry_dsn() -> str:
 
 def get_sentry_environment() -> str:
     return SENTRY_ENVIRONMENT
+
+
+# 画像取得設定
+# HTTPリクエストのタイムアウト（秒）
+IMAGE_FETCH_TIMEOUT: Final[int] = 5
+
+# 画像の最大サイズ（バイト）デフォルト: 4MB
+MAX_IMAGE_SIZE: Final[int] = 4 * 1024 * 1024
+
+
+def get_image_fetch_timeout() -> int:
+    return IMAGE_FETCH_TIMEOUT
+
+
+def get_max_image_size() -> int:
+    return MAX_IMAGE_SIZE
+
+
+def get_image_allowed_domain() -> str:
+    return IMAGE_ALLOWED_DOMAIN

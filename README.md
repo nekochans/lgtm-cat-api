@@ -83,6 +83,9 @@ export COGNITO_REGION=ap-northeast-1
 export COGNITO_USER_POOL_ID=
 export COGNITO_APP_CLIENT_ID=
 
+# 画像取得設定（URL画像取得機能用）
+export IMAGE_ALLOWED_DOMAIN=  # アクセス可能なドメイン（例: example.r2.cloudflarestorage.com）
+
 # Sentry設定（エラー監視）
 export SENTRY_DSN=           # SentryのDSN（未設定時はSentry無効）
 export SENTRY_ENVIRONMENT=   # 実行環境名
