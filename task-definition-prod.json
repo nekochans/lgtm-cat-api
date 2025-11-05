@@ -73,6 +73,10 @@
         {
           "name": "SENTRY_DSN",
           "valueFrom": "/prod/lgtm-cat/api/SENTRY_DSN"
+        },
+        {
+          "name": "IMAGE_ALLOWED_DOMAIN",
+          "valueFrom": "/prod/lgtm-cat/api/IMAGE_ALLOWED_DOMAIN"
         }
       ],
       "ulimits": [
