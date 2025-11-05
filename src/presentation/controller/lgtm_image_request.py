@@ -1,5 +1,7 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
+from urllib.parse import urlparse
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from domain.create_lgtm_image import can_convert_image_extension
@@ -25,4 +27,37 @@ class LgtmImageCreateRequest(BaseModel):
     def validate_image_extension(cls, v: str) -> str:
         if not can_convert_image_extension(v):
             raise ValueError(f"Invalid image extension: {v}")
+        return v
+
+
+class LgtmImageCreateFromUrlRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    image_url: str = Field(
+        ...,
+        alias="imageUrl",
+        description=(
+            "画像のURL（httpsのみ許可）。"
+            "URLの形式・スキームを検証します。"
+            "許可ドメインのチェックは infrastructure 層で実施します。"
+        ),
+        examples=[
+            "https://allowed-bucket.r2.cloudflarestorage.com/image.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256",
+        ],
+        min_length=1,
+    )
+
+    @field_validator("image_url")
+    @classmethod
+    def validate_image_url(cls, v: str) -> str:
+        parsed = urlparse(v)
+
+        # httpsのみ許可
+        if parsed.scheme != "https":
+            raise ValueError("image_url must be https URL")
+
+        # ホスト名が存在することを確認
+        if not parsed.netloc:
+            raise ValueError("image_url must have a valid hostname")
+
         return v

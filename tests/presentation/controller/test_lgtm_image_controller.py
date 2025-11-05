@@ -12,7 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.lgtm_image_repository import LgtmImageRepository
 from presentation.controller.lgtm_image_controller import LgtmImageController
-from presentation.controller.lgtm_image_request import LgtmImageCreateRequest
+from presentation.controller.lgtm_image_request import (
+    LgtmImageCreateFromUrlRequest,
+    LgtmImageCreateRequest,
+)
 from tests.fixtures.test_data_helpers import insert_test_lgtm_images
 
 
@@ -405,3 +408,225 @@ class TestLgtmImageController:
         content = json.loads(bytes(result.body))
         assert "error" in content
         assert "Internal server error" in content["error"]
+
+    @pytest.mark.asyncio
+    async def test_create_from_url_success(self) -> None:
+        """正常系: 許可されたURLから画像を取得してアップロードに成功する."""
+        # Arrange
+        image_url = "https://example.com/image.png"
+        base_url = "lgtm-images.lgtmeow.com"
+        expected_data = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
+
+        mock_image_fetch_repo = AsyncMock()
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            return_value={"data": expected_data, "mime_type": "image/png"}
+        )
+
+        mock_storage_repo = AsyncMock()
+        mock_storage_repo.upload = AsyncMock()
+
+        request_body = LgtmImageCreateFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        with patch(
+            "usecase.create_lgtm_image_from_url_usecase.generate_lgtm_image_name",
+            return_value="test-uuid-url",
+        ):
+            result = await LgtmImageController.create_from_url(
+                image_fetch_repository=mock_image_fetch_repo,
+                object_storage_repository=mock_storage_repo,
+                base_url=base_url,
+                request_body=request_body,
+            )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 202
+
+        content = json.loads(bytes(result.body))
+        assert "imageUrl" in content
+        assert base_url in content["imageUrl"]
+        assert "test-uuid-url" in content["imageUrl"]
+        assert content["imageUrl"].endswith(".webp")
+
+        mock_image_fetch_repo.fetch_image.assert_called_once_with(image_url)
+        mock_storage_repo.upload.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_create_from_url_invalid_url_error(self) -> None:
+        """異常系: 無効なURLの場合、400エラーを返す."""
+        # Arrange
+        image_url = "https://localhost/image.png"
+        base_url = "lgtm-images.lgtmeow.com"
+
+        mock_image_fetch_repo = AsyncMock()
+        from domain.lgtm_image_errors import ErrInvalidUrl
+
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            side_effect=ErrInvalidUrl("Invalid URL")
+        )
+
+        mock_storage_repo = AsyncMock()
+
+        request_body = LgtmImageCreateFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        result = await LgtmImageController.create_from_url(
+            image_fetch_repository=mock_image_fetch_repo,
+            object_storage_repository=mock_storage_repo,
+            base_url=base_url,
+            request_body=request_body,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 400
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "Invalid URL provided" in content["error"]
+
+        mock_storage_repo.upload.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_create_from_url_not_accessible_error(self) -> None:
+        """異常系: URLにアクセスできない場合、400エラーを返す."""
+        # Arrange
+        image_url = "https://example.com/not-found.png"
+        base_url = "lgtm-images.lgtmeow.com"
+
+        mock_image_fetch_repo = AsyncMock()
+        from domain.lgtm_image_errors import ErrUrlNotAccessible
+
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            side_effect=ErrUrlNotAccessible("URL not found")
+        )
+
+        mock_storage_repo = AsyncMock()
+
+        request_body = LgtmImageCreateFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        result = await LgtmImageController.create_from_url(
+            image_fetch_repository=mock_image_fetch_repo,
+            object_storage_repository=mock_storage_repo,
+            base_url=base_url,
+            request_body=request_body,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 400
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "URL not accessible" in content["error"]
+
+        mock_storage_repo.upload.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_create_from_url_fetch_failed_error(self) -> None:
+        """異常系: 画像取得失敗の場合、422エラーを返す."""
+        # Arrange
+        image_url = "https://example.com/image.png"
+        base_url = "lgtm-images.lgtmeow.com"
+
+        mock_image_fetch_repo = AsyncMock()
+        from domain.lgtm_image_errors import ErrImageFetchFailed
+
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            side_effect=ErrImageFetchFailed("Failed to fetch")
+        )
+
+        mock_storage_repo = AsyncMock()
+
+        request_body = LgtmImageCreateFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        result = await LgtmImageController.create_from_url(
+            image_fetch_repository=mock_image_fetch_repo,
+            object_storage_repository=mock_storage_repo,
+            base_url=base_url,
+            request_body=request_body,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 422
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "Failed to fetch image from URL" in content["error"]
+
+        mock_storage_repo.upload.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_create_from_url_invalid_extension_error(self) -> None:
+        """異常系: サポートされていない画像形式の場合、422エラーを返す."""
+        # Arrange
+        image_url = "https://example.com/image.gif"
+        base_url = "lgtm-images.lgtmeow.com"
+
+        # GIFのマジックナンバー
+        gif_data = b"GIF89a" + b"\x00" * 100
+
+        mock_image_fetch_repo = AsyncMock()
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            return_value={"data": gif_data, "mime_type": "image/gif"}
+        )
+
+        mock_storage_repo = AsyncMock()
+
+        request_body = LgtmImageCreateFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        result = await LgtmImageController.create_from_url(
+            image_fetch_repository=mock_image_fetch_repo,
+            object_storage_repository=mock_storage_repo,
+            base_url=base_url,
+            request_body=request_body,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 422
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "Invalid image extension or unsupported format" in content["error"]
+
+        mock_storage_repo.upload.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_create_from_url_general_exception_error(self) -> None:
+        """異常系: 予期しないエラーの場合、500エラーを返す."""
+        # Arrange
+        image_url = "https://example.com/image.png"
+        base_url = "lgtm-images.lgtmeow.com"
+
+        mock_image_fetch_repo = AsyncMock()
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            side_effect=Exception("Unexpected error")
+        )
+
+        mock_storage_repo = AsyncMock()
+
+        request_body = LgtmImageCreateFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        result = await LgtmImageController.create_from_url(
+            image_fetch_repository=mock_image_fetch_repo,
+            object_storage_repository=mock_storage_repo,
+            base_url=base_url,
+            request_body=request_body,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 500
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "Internal server error" in content["error"]
+
+        mock_storage_repo.upload.assert_not_called()
