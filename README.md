@@ -8,11 +8,11 @@ LGTMeow用のFastAPIベースのWeb APIです。
 - **Python 3.13.9**
 
 ### Webフレームワーク
-- **FastAPI 0.115.0+** - 高速なPython Webフレームワーク
-- **Uvicorn 0.30.6+** - ASGIサーバー（開発サーバーとして使用）
+- **FastAPI 0.121.0+** - 高速なPython Webフレームワーク
+- **Uvicorn 0.38.0+** - ASGIサーバー（開発サーバーとして使用）
 
 ### 認証
-- **python-jose 3.3.0+** - JWT（JSON Web Token）の生成・検証
+- **python-jose 3.5.0+** - JWT（JSON Web Token）の生成・検証
 - **AWS Cognito** - ユーザー認証とアクセストークン管理
 
 ### エラー監視
@@ -20,8 +20,8 @@ LGTMeow用のFastAPIベースのWeb APIです。
 
 ### 開発ツール
 - **uv** - 高速なPythonパッケージマネージャー
-- **Ruff 0.6.8+** - 高速なPythonリンター・フォーマッター
-- **mypy 1.11.2+** - 静的型チェッカー（strictモード）
+- **Ruff 0.14.3+** - 高速なPythonリンター・フォーマッター
+- **mypy 1.18.2+** - 静的型チェッカー（strictモード）
 
 ## セットアップ
 
