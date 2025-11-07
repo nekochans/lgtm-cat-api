@@ -32,9 +32,9 @@ router = APIRouter()
 
 
 def create_image_fetch_repository(
-    timeout: int = Depends(get_image_fetch_timeout),
-    max_size: int = Depends(get_max_image_size),
-    allowed_domain: str = Depends(get_image_allowed_domain),
+    timeout: Annotated[int, Depends(get_image_fetch_timeout)],
+    max_size: Annotated[int, Depends(get_max_image_size)],
+    allowed_domain: Annotated[str, Depends(get_image_allowed_domain)],
 ) -> ImageFetchRepositoryInterface:
     return HttpImageFetchRepository(
         timeout=timeout, max_size=max_size, allowed_domain=allowed_domain
@@ -42,7 +42,7 @@ def create_image_fetch_repository(
 
 
 def create_object_storage_repository(
-    bucket_name: str = Depends(get_upload_s3_bucket_name),
+    bucket_name: Annotated[str, Depends(get_upload_s3_bucket_name)],
 ) -> ObjectStorageRepositoryInterface:
     return S3Repository(bucket_name)
 
@@ -129,8 +129,8 @@ async def create_lgtm_image_from_url(
     object_storage_repository: Annotated[
         ObjectStorageRepositoryInterface, Depends(create_object_storage_repository)
     ],
-    base_url: str = Depends(get_lgtm_images_base_url),
-    token_payload: dict[str, Any] = Depends(verify_token),
+    base_url: Annotated[str, Depends(get_lgtm_images_base_url)],
+    token_payload: Annotated[dict[str, Any], Depends(verify_token)],
 ) -> JSONResponse:
     return await LgtmImageController.create_from_url(
         image_fetch_repository,

@@ -33,7 +33,7 @@ def create_lgtm_image_repository(
 
 
 def create_object_storage_repository(
-    bucket_name: str = Depends(get_upload_s3_bucket_name),
+    bucket_name: Annotated[str, Depends(get_upload_s3_bucket_name)],
 ) -> ObjectStorageRepositoryInterface:
     return S3Repository(bucket_name)
 
@@ -85,8 +85,8 @@ async def create_lgtm_image(
     object_storage_repository: Annotated[
         ObjectStorageRepositoryInterface, Depends(create_object_storage_repository)
     ],
-    base_url: str = Depends(get_lgtm_images_base_url),
-    token_payload: dict[str, Any] = Depends(verify_token),
+    base_url: Annotated[str, Depends(get_lgtm_images_base_url)],
+    token_payload: Annotated[dict[str, Any], Depends(verify_token)],
 ) -> JSONResponse:
     return await LgtmImageController.create(
         object_storage_repository, base_url, request_body
@@ -133,8 +133,8 @@ async def extract_random_lgtm_images(
     repository: Annotated[
         LgtmImageRepositoryInterface, Depends(create_lgtm_image_repository)
     ],
-    base_url: str = Depends(get_lgtm_images_base_url),
-    token_payload: dict[str, Any] = Depends(verify_token),
+    base_url: Annotated[str, Depends(get_lgtm_images_base_url)],
+    token_payload: Annotated[dict[str, Any], Depends(verify_token)],
 ) -> JSONResponse:
     return await LgtmImageController.exec(repository, base_url)
 
@@ -179,7 +179,7 @@ async def retrieve_recently_created_lgtm_images(
     repository: Annotated[
         LgtmImageRepositoryInterface, Depends(create_lgtm_image_repository)
     ],
-    base_url: str = Depends(get_lgtm_images_base_url),
-    token_payload: dict[str, Any] = Depends(verify_token),
+    base_url: Annotated[str, Depends(get_lgtm_images_base_url)],
+    token_payload: Annotated[dict[str, Any], Depends(verify_token)],
 ) -> JSONResponse:
     return await LgtmImageController.exec_recently_created(repository, base_url)
