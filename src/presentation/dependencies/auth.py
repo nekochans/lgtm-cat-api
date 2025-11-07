@@ -23,9 +23,9 @@ from infrastructure.cognito_token_verifier_repository import (
 
 
 def create_token_verifier_repository(
-    region: str = Depends(get_cognito_region),
-    user_pool_id: str = Depends(get_cognito_user_pool_id),
-    app_client_id: str = Depends(get_cognito_app_client_id),
+    region: Annotated[str, Depends(get_cognito_region)],
+    user_pool_id: Annotated[str, Depends(get_cognito_user_pool_id)],
+    app_client_id: Annotated[str, Depends(get_cognito_app_client_id)],
 ) -> JwtTokenVerifierRepositoryInterface:
     return CognitoTokenVerifierRepository(region, user_pool_id, app_client_id)
 
@@ -34,7 +34,7 @@ async def verify_token(
     token_verifier: Annotated[
         JwtTokenVerifierRepositoryInterface, Depends(create_token_verifier_repository)
     ],
-    authorization: str = Header(..., description="Bearer token"),
+    authorization: Annotated[str, Header(..., description="Bearer token")],
 ) -> dict[str, Any]:
     if not authorization.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Invalid authorization header")
