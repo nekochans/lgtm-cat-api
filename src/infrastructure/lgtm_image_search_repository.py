@@ -7,11 +7,14 @@ from domain.lgtm_image_search import (
     DEFAULT_SEARCH_MAX_RESULTS,
     LgtmImageSearchResult,
 )
+from domain.repository.lgtm_image_search_repository_interface import (
+    LgtmImageSearchRepositoryInterface,
+)
 from infrastructure.bedrock_client import BedrockClient
 from infrastructure.s3_vector_client import S3VectorClient
 
 
-class LgtmImageSearchRepository:
+class LgtmImageSearchRepository(LgtmImageSearchRepositoryInterface):
     """LGTM画像検索リポジトリの実装"""
 
     def __init__(
