@@ -21,6 +21,17 @@ COGNITO_REGION: Final[str] = os.getenv("COGNITO_REGION", "ap-northeast-1")
 SENTRY_DSN: Final[str] = os.getenv("SENTRY_DSN", "")
 SENTRY_ENVIRONMENT: Final[str] = os.getenv("SENTRY_ENVIRONMENT", "development")
 
+# AWS Bedrock設定
+AWS_BEDROCK_REGION: Final[str] = os.getenv("AWS_BEDROCK_REGION", "us-east-1")
+AWS_BEDROCK_EMBEDDING_MODEL_ID: Final[str] = os.getenv(
+    "AWS_BEDROCK_EMBEDDING_MODEL_ID", "cohere.embed-v4:0"
+)
+
+# S3 Vector設定
+S3_VECTOR_REGION: Final[str] = os.getenv("S3_VECTOR_REGION", "us-east-1")
+_s3_vector_bucket_name: Optional[str] = os.getenv("S3_VECTOR_BUCKET_NAME")
+_s3_vector_index_name: Optional[str] = os.getenv("S3_VECTOR_INDEX_NAME")
+
 # 必須の環境変数（Noneを許可するが、起動時に検証が必要）
 _cognito_user_pool_id: Optional[str] = os.getenv("COGNITO_USER_POOL_ID")
 _cognito_app_client_id: Optional[str] = os.getenv("COGNITO_APP_CLIENT_ID")
@@ -30,6 +41,8 @@ _image_allowed_domain: Optional[str] = os.getenv("IMAGE_ALLOWED_DOMAIN")
 COGNITO_USER_POOL_ID: Final[str] = _cognito_user_pool_id or ""
 COGNITO_APP_CLIENT_ID: Final[str] = _cognito_app_client_id or ""
 IMAGE_ALLOWED_DOMAIN: Final[str] = _image_allowed_domain or ""
+S3_VECTOR_BUCKET_NAME: Final[str] = _s3_vector_bucket_name or ""
+S3_VECTOR_INDEX_NAME: Final[str] = _s3_vector_index_name or ""
 
 
 def validate_required_config() -> None:
@@ -43,6 +56,12 @@ def validate_required_config() -> None:
 
     if not _image_allowed_domain:
         missing_vars.append("IMAGE_ALLOWED_DOMAIN")
+
+    if not _s3_vector_bucket_name:
+        missing_vars.append("S3_VECTOR_BUCKET_NAME")
+
+    if not _s3_vector_index_name:
+        missing_vars.append("S3_VECTOR_INDEX_NAME")
 
     if missing_vars:
         error_msg = (
