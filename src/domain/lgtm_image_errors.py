@@ -41,3 +41,7 @@ class ErrVectorDataCorrupted(Exception):
 
 class ErrVectorSearchFailed(Exception):
     pass
+
+
+class ErrInvalidSearchQuery(Exception):
+    pass
