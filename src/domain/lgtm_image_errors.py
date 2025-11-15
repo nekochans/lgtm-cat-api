@@ -29,3 +29,15 @@ class ErrImageFetchFailed(Exception):
 
 class ErrUrlNotAccessible(Exception):
     pass
+
+
+class ErrEmbeddingGenerationFailed(Exception):
+    pass
+
+
+class ErrVectorDataCorrupted(Exception):
+    pass
+
+
+class ErrVectorSearchFailed(Exception):
+    pass
