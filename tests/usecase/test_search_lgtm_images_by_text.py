@@ -194,7 +194,7 @@ class TestSearchLgtmImagesByTextUsecase:
         )
 
     @pytest.mark.asyncio
-    async def test_execute_raises_value_error_with_empty_string(self) -> None:
+    async def test_execute_raises_invalid_search_query_with_empty_string(self) -> None:
         """異常系: 空文字列のクエリでErrInvalidSearchQueryが発生する."""
         # Arrange
         mock_repository = AsyncMock()
@@ -211,7 +211,7 @@ class TestSearchLgtmImagesByTextUsecase:
         mock_repository.search_by_text.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_execute_raises_value_error_when_query_exceeds_max_length(
+    async def test_execute_raises_invalid_search_query_when_query_exceeds_max_length(
         self,
     ) -> None:
         """異常系: 文字数制限を超えるクエリでErrInvalidSearchQueryが発生する."""
