@@ -9,5 +9,8 @@ class LgtmImageSearchResult(TypedDict):
     similarity_score: Required[float]  # 類似度スコア（0.0〜1.0）
 
 
+# 検索クエリの最大文字数
+MAX_QUERY_LENGTH: Final[int] = 500
+
 # 検索結果のデフォルト最大件数
 DEFAULT_SEARCH_MAX_RESULTS: Final[int] = 9
