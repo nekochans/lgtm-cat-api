@@ -39,6 +39,8 @@ class BedrockClient:
                     contentType="application/json",
                     accept="application/json",
                 )
+                # async withブロックの中でresponse bodyを読み取る
+                response_body = json.loads(await response["body"].read())
         except (ClientError, BotoCoreError) as e:
             # ClientErrorの場合はerror_codeを取得、BotoCoreErrorの場合はNone
             error_code = getattr(e, "response", {}).get("Error", {}).get("Code")
@@ -67,7 +69,6 @@ class BedrockClient:
                 f"Failed to invoke Bedrock model: {type(e).__name__}"
             ) from e
 
-        response_body = json.loads(response["body"].read())
         # embedding_typesを指定した場合のレスポンス形式:
         # {"embeddings": {"float": [[float, float, ...]]}}
         embeddings_by_type = response_body.get("embeddings", {})
