@@ -1,7 +1,6 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
 import json
-from io import BytesIO
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -27,8 +26,10 @@ class TestBedrockClient:
         """正常にテキストの埋め込みが生成できることを検証"""
         # モックレスポンスの設定
         response_body = json.dumps(mock_bedrock_response)
+        mock_body = AsyncMock()
+        mock_body.read = AsyncMock(return_value=response_body.encode("utf-8"))
         mock_response = {
-            "body": BytesIO(response_body.encode("utf-8")),
+            "body": mock_body,
         }
 
         # aioboto3のセッションとクライアントをモック
@@ -101,8 +102,10 @@ class TestBedrockClient:
         # モックレスポンスの設定：floatキーがない
         mock_response_data = {"embeddings": {"int8": [[1, 2, 3]]}}  # floatがない
         response_body = json.dumps(mock_response_data)
+        mock_body = AsyncMock()
+        mock_body.read = AsyncMock(return_value=response_body.encode("utf-8"))
         mock_response = {
-            "body": BytesIO(response_body.encode("utf-8")),
+            "body": mock_body,
         }
 
         mock_client = AsyncMock()

@@ -33,3 +33,11 @@ class LgtmImageCreateResponse(BaseModel):
     image_url: HttpUrl = Field(
         ..., alias="imageUrl", description="アップロードされた画像のURL"
     )
+
+
+class LgtmImageSearchResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    lgtm_images: list[LgtmImageItem] = Field(
+        ..., alias="lgtmImages", description="検索結果の画像リスト"
+    )

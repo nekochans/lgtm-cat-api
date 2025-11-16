@@ -2,12 +2,16 @@
 
 from typing import TYPE_CHECKING
 
+from domain.repository.lgtm_image_search_repository_interface import (
+    LgtmImageSearchRepositoryInterface,
+)
 from fastapi.responses import JSONResponse
 
 from domain.lgtm_image import LgtmImage
 from domain.lgtm_image_errors import (
     ErrImageFetchFailed,
     ErrInvalidImageExtension,
+    ErrInvalidSearchQuery,
     ErrInvalidUrl,
     ErrRecordCount,
     ErrUrlNotAccessible,
@@ -26,6 +30,7 @@ from presentation.controller.lgtm_image_response import (
     LgtmImageItem,
     LgtmImageRandomListResponse,
     LgtmImageRecentlyCreatedListResponse,
+    LgtmImageSearchResponse,
 )
 from presentation.controller.response_helper import (
     create_json_response,
@@ -41,6 +46,7 @@ from usecase.extract_random_lgtm_images_usecase import (
 from usecase.retrieve_recently_created_lgtm_images_usecase import (
     RetrieveRecentlyCreatedLgtmImagesUsecase,
 )
+from usecase.search_lgtm_images_by_text import SearchLgtmImagesByTextUsecase
 
 if TYPE_CHECKING:
     from domain.repository.image_fetch_repository_interface import (
@@ -185,4 +191,32 @@ class LgtmImageController:
             )
         except Exception as e:
             logger.error(f"Error retrieving recently created LGTM images: {e}")
+            return create_error_response(e)
+
+    @staticmethod
+    async def search_by_text(
+        repository: LgtmImageSearchRepositoryInterface,
+        query: str,
+    ) -> JSONResponse:
+        logger.info("Searching LGTM images by text", extra={"query_length": len(query)})
+
+        try:
+            results = await SearchLgtmImagesByTextUsecase.execute(repository, query)
+
+            # ドメインエンティティをレスポンスモデルに変換（順序を保持）
+            image_items = [
+                LgtmImageItem(id=result["id"], url=result["url"])  # type: ignore[arg-type]
+                for result in results
+            ]
+
+            response = LgtmImageSearchResponse(lgtmImages=image_items)
+            return create_json_response(response)
+
+        except ErrInvalidSearchQuery as e:
+            # 空クエリなどのバリデーションエラー
+            logger.error(f"Validation error: {e}")
+            return JSONResponse(status_code=400, content={"error": str(e)})
+        except Exception as e:
+            # その他の予期しないエラー
+            logger.error(f"Error searching LGTM images by text: {e}")
             return create_error_response(e)

@@ -55,7 +55,7 @@ class LgtmImageSearchRepository(LgtmImageSearchRepositoryInterface):
                 )
 
             # 例: "2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp"
-            image_url = f"{self.base_url}/{source_key}"
+            image_url = f"https://{self.base_url}/{source_key}"
 
             # distanceフィールドを厳密に検証
             # S3 Vectorはdistance(距離)を返す(小さいほど類似度が高い)
