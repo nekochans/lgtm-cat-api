@@ -630,3 +630,126 @@ class TestLgtmImageController:
         assert "Internal server error" in content["error"]
 
         mock_storage_repo.upload.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_search_by_text_success_with_results(self) -> None:
+        """正常系: 検索クエリで複数の結果が返る."""
+        # Arrange
+        query = "cat"
+        mock_repository = AsyncMock()
+        mock_repository.search_by_text = AsyncMock(
+            return_value=[
+                {"id": "1", "url": "https://example.com/lgtm1.webp"},
+                {"id": "2", "url": "https://example.com/lgtm2.webp"},
+                {"id": "3", "url": "https://example.com/lgtm3.webp"},
+            ]
+        )
+
+        # Act
+        result = await LgtmImageController.search_by_text(
+            repository=mock_repository,
+            query=query,
+        )
+
+        # Assert - JSONResponseを返すことを検証
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 200
+
+        # Assert - レスポンス構造を検証
+        content = json.loads(bytes(result.body))
+        assert isinstance(content, dict)
+        assert "lgtmImages" in content
+        assert isinstance(content["lgtmImages"], list)
+        assert len(content["lgtmImages"]) == 3
+
+        # Assert - 各アイテムの構造を検証
+        for item in content["lgtmImages"]:
+            assert "id" in item
+            assert "url" in item
+            assert isinstance(item["id"], str)
+            assert isinstance(item["url"], str)
+
+        # Assert - モックが正しく呼ばれたことを検証
+        mock_repository.search_by_text.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_search_by_text_success_with_empty_results(self) -> None:
+        """正常系: 検索結果が0件の場合、空の配列を返す."""
+        # Arrange
+        query = "nonexistent"
+        mock_repository = AsyncMock()
+        mock_repository.search_by_text = AsyncMock(return_value=[])
+
+        # Act
+        result = await LgtmImageController.search_by_text(
+            repository=mock_repository,
+            query=query,
+        )
+
+        # Assert - JSONResponseを返すことを検証
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 200
+
+        # Assert - レスポンス構造を検証
+        content = json.loads(bytes(result.body))
+        assert isinstance(content, dict)
+        assert "lgtmImages" in content
+        assert isinstance(content["lgtmImages"], list)
+        assert len(content["lgtmImages"]) == 0
+
+        # Assert - モックが正しく呼ばれたことを検証
+        mock_repository.search_by_text.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_search_by_text_raises_error_with_invalid_query(self) -> None:
+        """異常系: ErrInvalidSearchQueryが発生した場合、400エラーを返す."""
+        # Arrange
+        query = ""
+        mock_repository = AsyncMock()
+        mock_repository.search_by_text = AsyncMock(return_value=[])
+
+        # Act
+        result = await LgtmImageController.search_by_text(
+            repository=mock_repository,
+            query=query,
+        )
+
+        # Assert - JSONResponseを返すことを検証
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 400
+
+        # Assert - エラーメッセージが含まれることを検証
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "Search query cannot be empty" in content["error"]
+
+        # Assert - 無効なクエリの場合、リポジトリが呼ばれないことを検証
+        mock_repository.search_by_text.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_search_by_text_raises_error_with_unexpected_exception(self) -> None:
+        """異常系: 予期しないエラーの場合、500エラーを返す."""
+        # Arrange
+        query = "cat"
+        mock_repository = AsyncMock()
+        mock_repository.search_by_text = AsyncMock(
+            side_effect=Exception("Unexpected database error")
+        )
+
+        # Act
+        result = await LgtmImageController.search_by_text(
+            repository=mock_repository,
+            query=query,
+        )
+
+        # Assert - JSONResponseを返すことを検証
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 500
+
+        # Assert - エラーメッセージが含まれることを検証
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "Internal server error" in content["error"]
+
+        # Assert - モックが正しく呼ばれたことを検証
+        mock_repository.search_by_text.assert_called_once()

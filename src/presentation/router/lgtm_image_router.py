@@ -7,20 +7,34 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import (
+    get_aws_bedrock_embedding_model_id,
+    get_aws_bedrock_region,
     get_lgtm_images_base_url,
+    get_s3_vector_bucket_name,
+    get_s3_vector_index_name,
+    get_s3_vector_region,
     get_upload_s3_bucket_name,
 )
 from domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
+from domain.repository.lgtm_image_search_repository_interface import (
+    LgtmImageSearchRepositoryInterface,
+)
 from domain.repository.object_storage_repository_interface import (
     ObjectStorageRepositoryInterface,
 )
+from infrastructure.bedrock_client import BedrockClient
 from infrastructure.database import create_db_session
 from infrastructure.lgtm_image_repository import LgtmImageRepository
+from infrastructure.lgtm_image_search_repository import LgtmImageSearchRepository
 from infrastructure.s3_repository import S3Repository
+from infrastructure.s3_vector_client import S3VectorClient
 from presentation.controller.lgtm_image_controller import LgtmImageController
-from presentation.controller.lgtm_image_request import LgtmImageCreateRequest
+from presentation.controller.lgtm_image_request import (
+    LgtmImageCreateRequest,
+    TextSearchRequest,
+)
 from presentation.dependencies.auth import verify_token
 
 router = APIRouter()
@@ -36,6 +50,27 @@ def create_object_storage_repository(
     bucket_name: Annotated[str, Depends(get_upload_s3_bucket_name)],
 ) -> ObjectStorageRepositoryInterface:
     return S3Repository(bucket_name)
+
+
+def create_lgtm_image_search_repository(
+    base_url: Annotated[str, Depends(get_lgtm_images_base_url)],
+    bedrock_region: Annotated[str, Depends(get_aws_bedrock_region)],
+    bedrock_model_id: Annotated[str, Depends(get_aws_bedrock_embedding_model_id)],
+    s3_vector_region: Annotated[str, Depends(get_s3_vector_region)],
+    s3_vector_bucket_name: Annotated[str, Depends(get_s3_vector_bucket_name)],
+    s3_vector_index_name: Annotated[str, Depends(get_s3_vector_index_name)],
+) -> LgtmImageSearchRepositoryInterface:
+    """LGTM画像検索リポジトリのインスタンスを生成"""
+    bedrock_client = BedrockClient(
+        region=bedrock_region,
+        model_id=bedrock_model_id,
+    )
+    s3_vector_client = S3VectorClient(
+        region=s3_vector_region,
+        bucket_name=s3_vector_bucket_name,
+        index_name=s3_vector_index_name,
+    )
+    return LgtmImageSearchRepository(bedrock_client, s3_vector_client, base_url)
 
 
 @router.post(
@@ -183,3 +218,64 @@ async def retrieve_recently_created_lgtm_images(
     token_payload: Annotated[dict[str, Any], Depends(verify_token)],
 ) -> JSONResponse:
     return await LgtmImageController.exec_recently_created(repository, base_url)
+
+
+@router.post(
+    "/lgtm-images/search/text",
+    summary="テキストからLGTM画像を検索",
+    description="ユーザーが入力したテキストと関連する画像を検索して返します。最大9件まで返却されます。",
+    response_description="検索結果の画像リスト（関連度の高い順）",
+    tags=["LGTM Images"],
+    responses={
+        200: {
+            "description": "成功時のレスポンス",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "lgtmImages": [
+                            {
+                                "id": "1",
+                                "url": "https://example.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                            },
+                            {
+                                "id": "2",
+                                "url": "https://example.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                            },
+                        ]
+                    }
+                }
+            },
+        },
+        400: {
+            "description": "バリデーションエラー（空クエリなど）",
+            "content": {
+                "application/json": {
+                    "example": {"error": "検索クエリは空白のみにできません"}
+                }
+            },
+        },
+        401: {
+            "description": "認証エラー",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Invalid authorization header"}
+                }
+            },
+        },
+        500: {
+            "description": "サーバーエラー",
+            "content": {
+                "application/json": {"example": {"error": "Internal server error"}}
+            },
+        },
+    },
+)
+async def search_lgtm_images_by_text(
+    request_body: TextSearchRequest,
+    repository: Annotated[
+        LgtmImageSearchRepositoryInterface,
+        Depends(create_lgtm_image_search_repository),
+    ],
+    token_payload: Annotated[dict[str, Any], Depends(verify_token)],
+) -> JSONResponse:
+    return await LgtmImageController.search_by_text(repository, request_body.query)

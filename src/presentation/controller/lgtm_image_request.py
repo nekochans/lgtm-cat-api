@@ -61,3 +61,23 @@ class LgtmImageCreateFromUrlRequest(BaseModel):
             raise ValueError("image_url must have a valid hostname")
 
         return v
+
+
+class TextSearchRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    query: str = Field(
+        ...,
+        description="検索クエリテキスト",
+        min_length=1,
+        max_length=200,
+        examples=["猫", "おめでとう", "ありがとう"],
+    )
+
+    @field_validator("query")
+    @classmethod
+    def validate_query(cls, v: str) -> str:
+        # 空白のみの文字列をチェック
+        if not v.strip():
+            raise ValueError("検索クエリは空白のみにできません")
+        return v

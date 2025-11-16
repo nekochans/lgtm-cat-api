@@ -78,6 +78,26 @@ def get_upload_s3_bucket_name() -> str:
     return UPLOAD_S3_BUCKET_NAME
 
 
+def get_aws_bedrock_region() -> str:
+    return AWS_BEDROCK_REGION
+
+
+def get_aws_bedrock_embedding_model_id() -> str:
+    return AWS_BEDROCK_EMBEDDING_MODEL_ID
+
+
+def get_s3_vector_region() -> str:
+    return S3_VECTOR_REGION
+
+
+def get_s3_vector_bucket_name() -> str:
+    return S3_VECTOR_BUCKET_NAME
+
+
+def get_s3_vector_index_name() -> str:
+    return S3_VECTOR_INDEX_NAME
+
+
 def get_log_level() -> str:
     return LOG_LEVEL
 
