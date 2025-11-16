@@ -51,44 +51,73 @@ cp .envrc.example .envrc
 
 #### 環境変数一覧
 
+##### 必須の環境変数
+
+アプリケーションの起動に必須の環境変数です。未設定の場合は起動時にエラーが発生します。
+
 ```bash
-# LGTM画像のベースURL
-export LGTM_IMAGES_BASE_URL=
-
-# LGTM画像のアップロード先S3バケット
-export UPLOAD_S3_BUCKET_NAME=
-
-# PlanetScale接続情報
-export DATABASE_USER=
-export DATABASE_PASSWORD=
-export DATABASE_HOST=
-export DATABASE_NAME=
-
-# PlanetScale API設定（テスト用）
-export PLANETSCALE_ORG_NAME=
-export PLANETSCALE_SERVICE_TOKEN_ID=
-export PLANETSCALE_SERVICE_TOKEN=
-export PLANETSCALE_DATABASE_NAME=
-export PLANETSCALE_BRANCH_NAME=
-
-# テスト用ローカルMySQL接続情報
-export TEST_DATABASE_PASSWORD=
-export TEST_DATABASE_ROOT_PASSWORD=
-
-# ログ設定
-export LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
-
 # AWS Cognito設定（JWT認証）
-export COGNITO_REGION=ap-northeast-1
-export COGNITO_USER_POOL_ID=
-export COGNITO_APP_CLIENT_ID=
+export COGNITO_USER_POOL_ID=         # CognitoユーザープールID
+export COGNITO_APP_CLIENT_ID=        # CognitoアプリクライアントID
 
 # 画像取得設定（URL画像取得機能用）
-export IMAGE_ALLOWED_DOMAIN=  # アクセス可能なドメイン（例: example.r2.cloudflarestorage.com）
+export IMAGE_ALLOWED_DOMAIN=         # アクセス可能なドメイン（例: example.r2.cloudflarestorage.com）
+
+# AWS S3 Vector設定（ベクトル検索機能用）
+export S3_VECTOR_BUCKET_NAME=        # S3ベクトルストレージのバケット名
+export S3_VECTOR_INDEX_NAME=         # S3ベクトルインデックス名
+
+# データベース接続情報
+export DATABASE_USER=                # データベースユーザー名
+export DATABASE_PASSWORD=            # データベースパスワード
+export DATABASE_HOST=                # データベースホスト
+export DATABASE_NAME=                # データベース名
+```
+
+##### オプションの環境変数
+
+デフォルト値が設定されているため、必要に応じて設定してください。
+
+```bash
+# LGTM画像のベースURL
+export LGTM_IMAGES_BASE_URL=lgtm-images.lgtmeow.com  # デフォルト: lgtm-images.lgtmeow.com
+
+# LGTM画像のアップロード先S3バケット
+export UPLOAD_S3_BUCKET_NAME=        # デフォルト: 空文字
+
+# ログ設定
+export LOG_LEVEL=INFO                # デフォルト: INFO（DEBUG, INFO, WARNING, ERROR, CRITICAL）
+
+# AWS Cognito設定
+export COGNITO_REGION=ap-northeast-1 # デフォルト: ap-northeast-1
+
+# AWS Bedrock設定（埋め込みモデル用）
+export AWS_BEDROCK_REGION=us-east-1  # デフォルト: us-east-1
+export AWS_BEDROCK_EMBEDDING_MODEL_ID=cohere.embed-v4:0  # デフォルト: cohere.embed-v4:0
+
+# AWS S3 Vector設定
+export S3_VECTOR_REGION=us-east-1    # デフォルト: us-east-1
 
 # Sentry設定（エラー監視）
-export SENTRY_DSN=           # SentryのDSN（未設定時はSentry無効）
-export SENTRY_ENVIRONMENT=   # 実行環境名
+export SENTRY_DSN=                   # デフォルト: 空文字（未設定時はSentry無効）
+export SENTRY_ENVIRONMENT=development # デフォルト: development（例: development, staging, production）
+```
+
+##### テスト専用の環境変数
+
+テスト実行時のみ必要な環境変数です。
+
+```bash
+# テスト用ローカルMySQL接続情報
+export TEST_DATABASE_PASSWORD=       # テスト用DBユーザーパスワード
+export TEST_DATABASE_ROOT_PASSWORD=  # テスト用DBルートパスワード（Docker Compose使用時）
+
+# PlanetScale API設定（テスト用）
+export PLANETSCALE_ORG_NAME=         # PlanetScale組織名
+export PLANETSCALE_SERVICE_TOKEN_ID= # PlanetScaleサービストークンID
+export PLANETSCALE_SERVICE_TOKEN=    # PlanetScaleサービストークン
+export PLANETSCALE_DATABASE_NAME=    # PlanetScaleデータベース名
+export PLANETSCALE_BRANCH_NAME=      # PlanetScaleブランチ名
 ```
 
 **注意**: `.envrc` ファイルは `.gitignore` に含まれているため、リポジトリにコミットされません。
