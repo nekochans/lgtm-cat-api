@@ -191,6 +191,7 @@ APIはシンプルなRESTパターンに従い、3つのエンドポイントを
 1. **GET /lgtm-images** - ランダムなLGTM画像を返す
 2. **POST /lgtm-images** - 新しいLGTM画像を作成（base64画像と拡張子を受け取る）
 3. **GET /lgtm-images/recently-created** - 最近作成されたLGTM画像を返す
+4. **POST /lgtm-images/search/text** - テキストからLGTM画像を検索
 
 レスポンスモデルはPydanticのBaseModelを使用して定義されており、JSONフィールドにはキャメルケースを使用します（例: `imageUrl`, `imageExtension`）。
 
