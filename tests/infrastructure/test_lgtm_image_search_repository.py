@@ -44,7 +44,7 @@ class TestLgtmImageSearchRepository:
             ]
         )
 
-        base_url = "https://example.com"
+        base_url = "example.com"
         repository = LgtmImageSearchRepository(
             bedrock_client=mock_bedrock_client,
             s3_vector_client=mock_s3_vector_client,
