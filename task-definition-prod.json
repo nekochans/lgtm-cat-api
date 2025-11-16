@@ -41,6 +41,14 @@
         {
           "name": "SENTRY_ENVIRONMENT",
           "value": "production"
+        },
+        {
+          "name": "S3_VECTOR_BUCKET_NAME",
+          "value": "prod-lgtm-cat-vectors"
+        },
+        {
+          "name": "S3_VECTOR_INDEX_NAME",
+          "value": "prod-multimodal-search-index"
         }
       ],
       "mountPoints": [],
