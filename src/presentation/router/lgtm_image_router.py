@@ -4,6 +4,12 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from presentation.controller.lgtm_image_response import (
+    LgtmImageCreateResponse,
+    LgtmImageRandomListResponse,
+    LgtmImageRecentlyCreatedListResponse,
+    LgtmImageSearchResponse,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import (
@@ -78,6 +84,7 @@ def create_lgtm_image_search_repository(
     summary="LGTM画像を作成",
     description="base64エンコードされた画像をS3にアップロードし、URLを返します。",
     response_description="アップロードされた画像のURL",
+    response_model=LgtmImageCreateResponse,
     tags=["LGTM Images"],
     status_code=202,
     responses={
@@ -133,6 +140,7 @@ async def create_lgtm_image(
     summary="ランダムなLGTM画像を取得",
     description="ランダムに選択されたLGTM画像のリストを返します。",
     response_description="ランダムに選択されたLGTM画像のリスト",
+    response_model=LgtmImageRandomListResponse,
     tags=["LGTM Images"],
     responses={
         200: {
@@ -143,11 +151,11 @@ async def create_lgtm_image(
                         "lgtmImages": [
                             {
                                 "id": "1",
-                                "url": "https://example.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                             {
                                 "id": "2",
-                                "url": "https://example.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                         ]
                     }
@@ -179,6 +187,7 @@ async def extract_random_lgtm_images(
     summary="最近作成されたLGTM画像を取得",
     description="最近作成されたLGTM画像のリストを返します。",
     response_description="最近作成されたLGTM画像のリスト",
+    response_model=LgtmImageRecentlyCreatedListResponse,
     tags=["LGTM Images"],
     responses={
         200: {
@@ -189,11 +198,11 @@ async def extract_random_lgtm_images(
                         "lgtmImages": [
                             {
                                 "id": "1",
-                                "url": "https://example.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                             {
                                 "id": "2",
-                                "url": "https://example.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                         ]
                     }
@@ -224,7 +233,8 @@ async def retrieve_recently_created_lgtm_images(
     "/lgtm-images/search/text",
     summary="テキストからLGTM画像を検索",
     description="ユーザーが入力したテキストと関連する画像を検索して返します。最大9件まで返却されます。",
-    response_description="検索結果の画像リスト（関連度の高い順）",
+    response_description="検索結果の画像リスト(関連度の高い順)",
+    response_model=LgtmImageSearchResponse,
     tags=["LGTM Images"],
     responses={
         200: {
@@ -235,11 +245,11 @@ async def retrieve_recently_created_lgtm_images(
                         "lgtmImages": [
                             {
                                 "id": "1",
-                                "url": "https://example.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                             {
                                 "id": "2",
-                                "url": "https://example.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                         ]
                     }

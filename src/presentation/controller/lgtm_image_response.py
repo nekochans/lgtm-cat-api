@@ -8,6 +8,9 @@ class LgtmImageItem(BaseModel):
     url: HttpUrl = Field(
         ...,
         description="LGTM画像のURL",
+        examples=[
+            "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp"
+        ],
     )
 
 
@@ -15,7 +18,21 @@ class LgtmImageRandomListResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     lgtm_images: list[LgtmImageItem] = Field(
-        ..., alias="lgtmImages", description="LGTM画像のリスト"
+        ...,
+        alias="lgtmImages",
+        description="LGTM画像のリスト",
+        examples=[
+            [
+                {
+                    "id": "1",
+                    "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                },
+                {
+                    "id": "2",
+                    "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                },
+            ]
+        ],
     )
 
 
@@ -23,7 +40,21 @@ class LgtmImageRecentlyCreatedListResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     lgtm_images: list[LgtmImageItem] = Field(
-        ..., alias="lgtmImages", description="最近作成されたLGTM画像のリスト"
+        ...,
+        alias="lgtmImages",
+        description="最近作成されたLGTM画像のリスト",
+        examples=[
+            [
+                {
+                    "id": "1",
+                    "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                },
+                {
+                    "id": "2",
+                    "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                },
+            ]
+        ],
     )
 
 
@@ -31,7 +62,12 @@ class LgtmImageCreateResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     image_url: HttpUrl = Field(
-        ..., alias="imageUrl", description="アップロードされた画像のURL"
+        ...,
+        alias="imageUrl",
+        description="アップロードされた画像のURL",
+        examples=[
+            "https://lgtm-images.lgtmeow.com/2024/01/15/14/5947f291-a46e-453c-a230-0d756d7174cb.webp"
+        ],
     )
 
 
@@ -39,5 +75,19 @@ class LgtmImageSearchResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     lgtm_images: list[LgtmImageItem] = Field(
-        ..., alias="lgtmImages", description="検索結果の画像リスト"
+        ...,
+        alias="lgtmImages",
+        description="検索結果の画像リスト",
+        examples=[
+            [
+                {
+                    "id": "1",
+                    "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                },
+                {
+                    "id": "2",
+                    "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                },
+            ]
+        ],
     )
