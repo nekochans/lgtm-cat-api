@@ -151,11 +151,11 @@ async def create_lgtm_image(
                         "lgtmImages": [
                             {
                                 "id": "1",
-                                "url": "https://example.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                             {
                                 "id": "2",
-                                "url": "https://example.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                         ]
                     }
@@ -198,11 +198,11 @@ async def extract_random_lgtm_images(
                         "lgtmImages": [
                             {
                                 "id": "1",
-                                "url": "https://example.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                             {
                                 "id": "2",
-                                "url": "https://example.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                         ]
                     }
@@ -245,11 +245,11 @@ async def retrieve_recently_created_lgtm_images(
                         "lgtmImages": [
                             {
                                 "id": "1",
-                                "url": "https://example.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                             {
                                 "id": "2",
-                                "url": "https://example.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
                             },
                         ]
                     }
