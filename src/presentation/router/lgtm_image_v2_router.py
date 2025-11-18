@@ -26,6 +26,9 @@ from presentation.controller.lgtm_image_controller import LgtmImageController
 from presentation.controller.lgtm_image_request import (
     LgtmImageCreateFromUrlRequest,
 )
+from presentation.controller.lgtm_image_response import (
+    LgtmImageCreateResponse,
+)
 from presentation.dependencies.auth import verify_token
 
 router = APIRouter()
@@ -52,6 +55,7 @@ def create_object_storage_repository(
     summary="署名付きURLからLGTM画像を作成",
     description="許可された署名付きURLから画像を取得してS3にアップロードし、URLを返します。セキュリティ上、事前に設定されたドメインのURLのみ受け付けます。",
     response_description="アップロードされた画像のURL",
+    response_model=LgtmImageCreateResponse,
     tags=["LGTM Images V2"],
     status_code=202,
     responses={
