@@ -1,6 +1,7 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
 import math
+from typing import Any
 
 from domain.lgtm_image_errors import ErrVectorDataCorrupted
 from domain.lgtm_image_search import (
@@ -27,18 +28,12 @@ class LgtmImageSearchRepository(LgtmImageSearchRepositoryInterface):
         self.s3_vector_client = s3_vector_client
         self.base_url = base_url
 
-    async def search_by_text(
-        self, query_text: str, max_results: int = DEFAULT_SEARCH_MAX_RESULTS
+    def _convert_search_results(
+        self, search_results: list[dict[str, Any]]
     ) -> list[LgtmImageSearchResult]:
-        query_vector = await self.bedrock_client.generate_text_embedding(query_text)
-
-        search_results = await self.s3_vector_client.search_similar_vectors(
-            query_vector, max_results
-        )
-
         results: list[LgtmImageSearchResult] = []
         for result in search_results:
-            # key にはDB IDが格納されている - まず存在をチェック
+            # keyにはDB IDが格納されている - まず存在をチェック
             image_id = result.get("key")
             if not image_id:
                 raise ErrVectorDataCorrupted(
@@ -98,3 +93,30 @@ class LgtmImageSearchRepository(LgtmImageSearchRepositoryInterface):
             )
 
         return results
+
+    async def search_by_text(
+        self, query_text: str, max_results: int = DEFAULT_SEARCH_MAX_RESULTS
+    ) -> list[LgtmImageSearchResult]:
+        query_vector = await self.bedrock_client.generate_text_embedding(query_text)
+
+        search_results = await self.s3_vector_client.search_similar_vectors(
+            query_vector, max_results
+        )
+
+        return self._convert_search_results(search_results)
+
+    async def search_by_image(
+        self,
+        image_data: str,
+        image_extension: str,
+        max_results: int = DEFAULT_SEARCH_MAX_RESULTS,
+    ) -> list[LgtmImageSearchResult]:
+        query_vector = await self.bedrock_client.generate_image_embedding(
+            image_data, image_extension
+        )
+
+        search_results = await self.s3_vector_client.search_similar_vectors(
+            query_vector, max_results
+        )
+
+        return self._convert_search_results(search_results)

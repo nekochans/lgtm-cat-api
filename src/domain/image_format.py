@@ -8,6 +8,13 @@ _MIME_TO_EXT = {
     "image/png": ".png",
 }
 
+# 拡張子からMIMEタイプへのマッピング(単一の情報源)
+_EXT_TO_MIME = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+}
+
 # 許可される画像のMIMEタイプ(後方互換性のため_MIME_TO_EXTから派生)
 ALLOWED_IMAGE_MIME_TYPES = list(_MIME_TO_EXT.keys())
 

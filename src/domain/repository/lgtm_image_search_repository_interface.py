@@ -9,3 +9,10 @@ class LgtmImageSearchRepositoryInterface(Protocol):
     async def search_by_text(
         self, query_text: str, max_results: int = DEFAULT_SEARCH_MAX_RESULTS
     ) -> list[LgtmImageSearchResult]: ...
+
+    async def search_by_image(
+        self,
+        image_data: str,
+        image_extension: str,
+        max_results: int = 9,
+    ) -> list[LgtmImageSearchResult]: ...

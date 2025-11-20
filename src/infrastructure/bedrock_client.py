@@ -4,8 +4,8 @@ import json
 
 import aioboto3
 
+from domain.image_format import _EXT_TO_MIME
 from domain.lgtm_image_errors import ErrEmbeddingGenerationFailed
-
 
 from botocore.exceptions import BotoCoreError, ClientError
 
@@ -20,15 +20,7 @@ class BedrockClient:
         self.model_id = model_id
         self.session = aioboto3.Session()
 
-    async def generate_text_embedding(self, text: str) -> list[float]:
-        body = json.dumps(
-            {
-                "texts": [text],
-                "input_type": "search_query",
-                "embedding_types": ["float"],
-            }
-        )
-
+    async def _invoke_bedrock_model(self, body: str) -> list[float]:
         try:
             async with self.session.client(
                 "bedrock-runtime", region_name=self.region
@@ -77,3 +69,35 @@ class BedrockClient:
             raise ErrEmbeddingGenerationFailed("No float embeddings found in response")
         embeddings: list[float] = float_embeddings[0]
         return embeddings
+
+    async def generate_text_embedding(self, text: str) -> list[float]:
+        body = json.dumps(
+            {
+                "texts": [text],
+                "input_type": "search_query",
+                "embedding_types": ["float"],
+            }
+        )
+        return await self._invoke_bedrock_model(body)
+
+    async def generate_image_embedding(
+        self, image_data: str, image_extension: str
+    ) -> list[float]:
+        ext_lower = image_extension.lower()
+        mime_type = _EXT_TO_MIME.get(ext_lower)
+        if mime_type is None:
+            raise ErrEmbeddingGenerationFailed(
+                f"Unsupported image extension: {image_extension}"
+            )
+
+        data_uri = f"data:{mime_type};base64,{image_data}"
+
+        body = json.dumps(
+            {
+                "images": [data_uri],
+                "input_type": "search_query",
+                "embedding_types": ["float"],
+            }
+        )
+
+        return await self._invoke_bedrock_model(body)
