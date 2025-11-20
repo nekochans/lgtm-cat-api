@@ -54,6 +54,77 @@ pytest --cov=src --cov-report=html
 - Ruffのリントとフォーマットに準拠
 - `make lint`と`make format`を通過する必要がある
 
+## テストコード作成時のパターン
+
+### パラメータライズテストの活用
+
+類似した複数のテストケースがある場合は、個別のテストメソッドではなく `@pytest.mark.parametrize` を使用したパラメータライズテストとして実装してください。
+
+**必須**: `ids` パラメータを指定して、テスト結果を読みやすくすること。
+
+**推奨パターン**:
+```python
+@pytest.mark.parametrize(
+    ("extension", "expected_mime_type"),
+    [
+        (".jpg", "image/jpeg"),
+        (".jpeg", "image/jpeg"),
+        (".png", "image/png"),
+    ],
+    ids=["jpg", "jpeg", "png"],  # 必須: テスト結果を読みやすくする
+)
+def test_convert_extension_to_mime_type(
+    self, extension: str, expected_mime_type: str
+) -> None:
+    """拡張子を正しいMIMEタイプに変換する."""
+    result = extension_to_mime_type(extension)
+    assert result == expected_mime_type
+```
+
+**ids命名ルール**:
+- 簡潔でテストケースの内容がわかる名前を使用
+- 特殊文字を含む場合は、わかりやすい別名を使用（例: `"  .jpg  "` → `"jpg_with_spaces"`）
+- 英数字とアンダースコアを推奨
+
+**避けるべきパターン**:
+```python
+# ❌ idsなし（テスト結果が読みにくい）
+@pytest.mark.parametrize(
+    ("extension", "expected_mime_type"),
+    [
+        (".jpg", "image/jpeg"),
+        (".jpeg", "image/jpeg"),
+    ],
+)
+
+# ❌ 個別のテストメソッド（重複が多い）
+def test_convert_jpg_extension(self) -> None:
+    result = extension_to_mime_type(".jpg")
+    assert result == "image/jpeg"
+
+def test_convert_jpeg_extension(self) -> None:
+    result = extension_to_mime_type(".jpeg")
+    assert result == "image/jpeg"
+```
+
+**テスト結果の比較**:
+```
+# idsあり（読みやすい）
+test_convert_extension_to_mime_type[jpg] PASSED
+test_convert_extension_to_mime_type[jpeg] PASSED
+
+# idsなし（読みにくい）
+test_convert_extension_to_mime_type[.jpg-image/jpeg] PASSED
+test_convert_extension_to_mime_type[.jpeg-image/jpeg] PASSED
+```
+
+**メリット**:
+- テストコードの重複を削減
+- 新しいテストケースの追加が容易
+- テストの意図が明確になる
+- テスト結果で各パラメータの組み合わせが読みやすく表示される
+- テスト失敗時にどのケースが失敗したか即座に把握できる
+
 ## データベーステスト
 
 ### test_db_session フィクスチャの使用
