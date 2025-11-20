@@ -2,7 +2,7 @@
 
 import pytest
 
-from domain.image_format import mime_type_to_extension
+from domain.image_format import extension_to_mime_type, mime_type_to_extension
 from domain.lgtm_image_errors import ErrInvalidImageExtension
 
 
@@ -71,3 +71,76 @@ class TestMimeTypeToExtension:
 
         # Assert
         assert result == ".png"
+
+
+class TestExtensionToMimeType:
+    @pytest.mark.parametrize(
+        ("extension", "expected_mime_type"),
+        [
+            (".jpg", "image/jpeg"),
+            (".jpeg", "image/jpeg"),
+            (".png", "image/png"),
+        ],
+        ids=["jpg", "jpeg", "png"],
+    )
+    def test_convert_extension_to_mime_type(
+        self, extension: str, expected_mime_type: str
+    ) -> None:
+        """拡張子を正しいMIMEタイプに変換する."""
+        # Act
+        result = extension_to_mime_type(extension)
+
+        # Assert
+        assert result == expected_mime_type
+
+    @pytest.mark.parametrize(
+        "extension",
+        [".webp", ".pdf", ".gif", ".bmp"],
+        ids=["webp", "pdf", "gif", "bmp"],
+    )
+    def test_raises_error_for_unsupported_extension(self, extension: str) -> None:
+        """サポートされていない拡張子の場合、エラーを発生させる."""
+        # Act & Assert
+        with pytest.raises(ErrInvalidImageExtension) as exc_info:
+            extension_to_mime_type(extension)
+
+        assert "Unsupported image extension" in str(exc_info.value)
+        assert extension in str(exc_info.value)
+
+    @pytest.mark.parametrize(
+        ("extension", "expected_mime_type"),
+        [
+            (".JPG", "image/jpeg"),
+            (".Png", "image/png"),
+            (".JPEG", "image/jpeg"),
+        ],
+        ids=["JPG", "Png", "JPEG"],
+    )
+    def test_convert_uppercase_extension(
+        self, extension: str, expected_mime_type: str
+    ) -> None:
+        """大文字の拡張子も正しく変換される(大文字小文字を区別しない)."""
+        # Act
+        result = extension_to_mime_type(extension)
+
+        # Assert
+        assert result == expected_mime_type
+
+    @pytest.mark.parametrize(
+        ("extension", "expected_mime_type"),
+        [
+            ("  .jpg  ", "image/jpeg"),
+            ("  .PNG  ", "image/png"),
+            ("  .jpeg  ", "image/jpeg"),
+        ],
+        ids=["jpg_with_spaces", "PNG_with_spaces", "jpeg_with_spaces"],
+    )
+    def test_convert_extension_with_whitespace(
+        self, extension: str, expected_mime_type: str
+    ) -> None:
+        """前後に空白を含む拡張子も正しく変換される(トリム処理)."""
+        # Act
+        result = extension_to_mime_type(extension)
+
+        # Assert
+        assert result == expected_mime_type

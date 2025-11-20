@@ -8,6 +8,13 @@ _MIME_TO_EXT = {
     "image/png": ".png",
 }
 
+# 拡張子からMIMEタイプへのマッピング(単一の情報源)
+_EXT_TO_MIME = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+}
+
 # 許可される画像のMIMEタイプ(後方互換性のため_MIME_TO_EXTから派生)
 ALLOWED_IMAGE_MIME_TYPES = list(_MIME_TO_EXT.keys())
 
@@ -26,3 +33,17 @@ def mime_type_to_extension(mime_type: str) -> str:
         )
 
     return extension
+
+
+def extension_to_mime_type(extension: str) -> str:
+    # 拡張子を正規化(トリム + 小文字化)して大文字小文字を区別しない検索を行う
+    normalized_extension = extension.strip().lower()
+
+    mime_type = _EXT_TO_MIME.get(normalized_extension)
+    if mime_type is None:
+        allowed_exts = " or ".join(sorted(_EXT_TO_MIME.keys()))
+        raise ErrInvalidImageExtension(
+            f"Unsupported image extension: {normalized_extension}. Expected {allowed_exts}"
+        )
+
+    return mime_type
