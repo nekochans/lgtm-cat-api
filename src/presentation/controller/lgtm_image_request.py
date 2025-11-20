@@ -81,3 +81,26 @@ class TextSearchRequest(BaseModel):
         if not v.strip():
             raise ValueError("検索クエリは空白のみにできません")
         return v
+
+
+class LgtmImageSearchByImageRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    image: str = Field(
+        ...,
+        description="base64エンコードされた画像データ",
+        examples=["iVBORw0KGgoAAAANSUhEUgAAAAUA..."],
+    )
+    image_extension: str = Field(
+        ...,
+        alias="imageExtension",
+        description="画像拡張子",
+        examples=[".png", ".jpg", ".jpeg"],
+    )
+
+    @field_validator("image_extension")
+    @classmethod
+    def validate_image_extension(cls, v: str) -> str:
+        if not can_convert_image_extension(v):
+            raise ValueError(f"Invalid image extension: {v}")
+        return v

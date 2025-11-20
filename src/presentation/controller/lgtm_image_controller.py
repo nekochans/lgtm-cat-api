@@ -1,5 +1,6 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
+from pydantic import HttpUrl
 from typing import TYPE_CHECKING
 
 from domain.repository.lgtm_image_search_repository_interface import (
@@ -24,12 +25,15 @@ from log.url_sanitizer import sanitize_url_for_logging
 from presentation.controller.lgtm_image_request import (
     LgtmImageCreateFromUrlRequest,
     LgtmImageCreateRequest,
+    LgtmImageSearchByImageRequest,
 )
 from presentation.controller.lgtm_image_response import (
     LgtmImageCreateResponse,
     LgtmImageItem,
     LgtmImageRandomListResponse,
     LgtmImageRecentlyCreatedListResponse,
+    LgtmImageSearchByImageResponse,
+    LgtmImageSearchItem,
     LgtmImageSearchResponse,
 )
 from presentation.controller.response_helper import (
@@ -46,6 +50,7 @@ from usecase.extract_random_lgtm_images_usecase import (
 from usecase.retrieve_recently_created_lgtm_images_usecase import (
     RetrieveRecentlyCreatedLgtmImagesUsecase,
 )
+from usecase.search_lgtm_images_by_image import SearchLgtmImagesByImageUsecase
 from usecase.search_lgtm_images_by_text import SearchLgtmImagesByTextUsecase
 
 if TYPE_CHECKING:
@@ -219,4 +224,39 @@ class LgtmImageController:
         except Exception as e:
             # その他の予期しないエラー
             logger.error(f"Error searching LGTM images by text: {e}")
+            return create_error_response(e)
+
+    @staticmethod
+    async def search_by_image(
+        repository: LgtmImageSearchRepositoryInterface,
+        request: LgtmImageSearchByImageRequest,
+    ) -> JSONResponse:
+        logger.info(
+            "Searching LGTM images by image",
+            extra={"image_extension": request.image_extension},
+        )
+
+        try:
+            # ユースケース実行
+            similar_images = await SearchLgtmImagesByImageUsecase.execute(
+                repository, request.image, request.image_extension
+            )
+
+            # レスポンスモデルに変換
+            image_items = [
+                LgtmImageSearchItem(
+                    id=img["id"],
+                    url=HttpUrl(img["url"]),
+                    similarityScore=img["similarity_score"],
+                )
+                for img in similar_images
+            ]
+            response = LgtmImageSearchByImageResponse(lgtmImages=image_items)
+
+            # JSONResponse返却
+            return create_json_response(response)
+
+        except Exception as e:
+            # エラーハンドリング
+            logger.error(f"Error searching LGTM images by image: {e}")
             return create_error_response(e)

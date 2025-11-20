@@ -15,6 +15,7 @@ from presentation.controller.lgtm_image_controller import LgtmImageController
 from presentation.controller.lgtm_image_request import (
     LgtmImageCreateFromUrlRequest,
     LgtmImageCreateRequest,
+    LgtmImageSearchByImageRequest,
 )
 from tests.fixtures.test_data_helpers import insert_test_lgtm_images
 
@@ -753,3 +754,115 @@ class TestLgtmImageController:
 
         # Assert - モックが正しく呼ばれたことを検証
         mock_repository.search_by_text.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_search_by_image_success_with_results(self) -> None:
+        """正常系: 類似画像検索で複数の結果が返る."""
+        # Arrange
+        mock_request = LgtmImageSearchByImageRequest(
+            image="base64encodedimagedata", imageExtension=".png"
+        )
+        mock_repository = AsyncMock()
+        mock_repository.search_by_image = AsyncMock(
+            return_value=[
+                {
+                    "id": "1",
+                    "url": "https://example.com/lgtm1.webp",
+                    "similarity_score": 0.95,
+                },
+                {
+                    "id": "2",
+                    "url": "https://example.com/lgtm2.webp",
+                    "similarity_score": 0.87,
+                },
+                {
+                    "id": "3",
+                    "url": "https://example.com/lgtm3.webp",
+                    "similarity_score": 0.75,
+                },
+            ]
+        )
+
+        # Act
+        result = await LgtmImageController.search_by_image(
+            repository=mock_repository,
+            request=mock_request,
+        )
+
+        # Assert - JSONResponseを返すことを検証
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 200
+
+        # Assert - レスポンス構造を検証
+        content = json.loads(bytes(result.body))
+        assert isinstance(content, dict)
+        assert "lgtmImages" in content
+        assert isinstance(content["lgtmImages"], list)
+        assert len(content["lgtmImages"]) == 3
+
+        # Assert - 各アイテムの構造を検証（類似度スコア付き）
+        for item in content["lgtmImages"]:
+            assert "id" in item
+            assert "url" in item
+            assert "similarityScore" in item
+            assert isinstance(item["id"], str)
+            assert isinstance(item["url"], str)
+            assert isinstance(item["similarityScore"], (int, float))
+
+        # Assert - モックが正しく呼ばれたことを検証
+        mock_repository.search_by_image.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_search_by_image_success_with_empty_results(self) -> None:
+        """正常系: 類似画像検索で結果が0件の場合."""
+        # Arrange
+        mock_request = LgtmImageSearchByImageRequest(
+            image="base64encodedimagedata", imageExtension=".jpg"
+        )
+        mock_repository = AsyncMock()
+        mock_repository.search_by_image = AsyncMock(return_value=[])
+
+        # Act
+        result = await LgtmImageController.search_by_image(
+            repository=mock_repository,
+            request=mock_request,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 200
+
+        content = json.loads(bytes(result.body))
+        assert content == {"lgtmImages": []}
+
+        mock_repository.search_by_image.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_search_by_image_raises_error_with_unexpected_exception(
+        self,
+    ) -> None:
+        """異常系: 予期しないエラーが発生した場合、500エラーを返す."""
+        # Arrange
+        mock_request = LgtmImageSearchByImageRequest(
+            image="base64encodedimagedata", imageExtension=".png"
+        )
+        mock_repository = AsyncMock()
+        mock_repository.search_by_image = AsyncMock(
+            side_effect=Exception("Unexpected database error")
+        )
+
+        # Act
+        result = await LgtmImageController.search_by_image(
+            repository=mock_repository,
+            request=mock_request,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 500
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert content["error"] == "Internal server error"
+
+        mock_repository.search_by_image.assert_called_once()

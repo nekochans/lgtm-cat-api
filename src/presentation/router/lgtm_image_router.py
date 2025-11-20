@@ -8,6 +8,7 @@ from presentation.controller.lgtm_image_response import (
     LgtmImageCreateResponse,
     LgtmImageRandomListResponse,
     LgtmImageRecentlyCreatedListResponse,
+    LgtmImageSearchByImageResponse,
     LgtmImageSearchResponse,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -39,6 +40,7 @@ from infrastructure.s3_vector_client import S3VectorClient
 from presentation.controller.lgtm_image_controller import LgtmImageController
 from presentation.controller.lgtm_image_request import (
     LgtmImageCreateRequest,
+    LgtmImageSearchByImageRequest,
     TextSearchRequest,
 )
 from presentation.dependencies.auth import verify_token
@@ -289,3 +291,76 @@ async def search_lgtm_images_by_text(
     token_payload: Annotated[dict[str, Any], Depends(verify_token)],
 ) -> JSONResponse:
     return await LgtmImageController.search_by_text(repository, request_body.query)
+
+
+@router.post(
+    "/lgtm-images/search/image",
+    summary="画像から類似したLGTM画像を検索",
+    description="ユーザーから入力された画像と類似する画像を検索して返します。最大9件まで返却されます。",
+    response_description="類似画像検索結果のリスト（類似度の高い順）",
+    response_model=LgtmImageSearchByImageResponse,
+    tags=["LGTM Images"],
+    responses={
+        200: {
+            "description": "成功時のレスポンス",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "lgtmImages": [
+                            {
+                                "id": "1",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "similarityScore": 0.95,
+                            },
+                            {
+                                "id": "2",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "similarityScore": 0.87,
+                            },
+                        ]
+                    }
+                }
+            },
+        },
+        401: {
+            "description": "認証エラー",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Invalid authorization header"}
+                }
+            },
+        },
+        422: {
+            "description": "バリデーションエラー（無効な画像拡張子など）",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": [
+                            {
+                                "type": "value_error",
+                                "loc": ["body", "imageExtension"],
+                                "msg": "Value error, Invalid image extension: .invalid",
+                                "input": ".invalid",
+                            }
+                        ]
+                    }
+                }
+            },
+        },
+        500: {
+            "description": "サーバーエラー",
+            "content": {
+                "application/json": {"example": {"error": "Internal server error"}}
+            },
+        },
+    },
+)
+async def search_by_image(
+    request_body: LgtmImageSearchByImageRequest,
+    repository: Annotated[
+        LgtmImageSearchRepositoryInterface,
+        Depends(create_lgtm_image_search_repository),
+    ],
+    token_payload: Annotated[dict[str, Any], Depends(verify_token)],
+) -> JSONResponse:
+    return await LgtmImageController.search_by_image(repository, request_body)
