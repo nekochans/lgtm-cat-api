@@ -4,7 +4,7 @@ import json
 
 import aioboto3
 
-from domain.image_format import _EXT_TO_MIME
+from domain.image_format import extension_to_mime_type
 from domain.lgtm_image_errors import ErrEmbeddingGenerationFailed
 
 from botocore.exceptions import BotoCoreError, ClientError
@@ -83,12 +83,7 @@ class BedrockClient:
     async def generate_image_embedding(
         self, image_data: str, image_extension: str
     ) -> list[float]:
-        ext_lower = image_extension.lower()
-        mime_type = _EXT_TO_MIME.get(ext_lower)
-        if mime_type is None:
-            raise ErrEmbeddingGenerationFailed(
-                f"Unsupported image extension: {image_extension}"
-            )
+        mime_type = extension_to_mime_type(image_extension)
 
         data_uri = f"data:{mime_type};base64,{image_data}"
 
