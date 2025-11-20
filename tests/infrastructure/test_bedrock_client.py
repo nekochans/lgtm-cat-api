@@ -243,3 +243,24 @@ class TestBedrockClient:
             )
 
         assert "No float embeddings found in response" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_generate_image_embedding_invalid_extension(self) -> None:
+        """サポート外の拡張子が指定された場合、ErrEmbeddingGenerationFailedが発生することを検証
+
+        Note:
+            通常、サポート外の拡張子はPydanticバリデーションで事前にチェックされます。
+            このテストは、バリデーション設定とMIMEマッピングの不整合がある場合に
+            適切にエラーハンドリングされることを確認します。
+        """
+        bedrock_client = BedrockClient(region="us-east-1", model_id="cohere.embed-v4:0")
+
+        # サポート外の拡張子でテスト実行
+        with pytest.raises(ErrEmbeddingGenerationFailed) as exc_info:
+            await bedrock_client.generate_image_embedding(
+                "base64encodedimagedata", ".webp"
+            )
+
+        # エラーメッセージに設定エラーであることが含まれていることを確認
+        assert "Configuration error" in str(exc_info.value)
+        assert ".webp" in str(exc_info.value)

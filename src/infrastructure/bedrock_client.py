@@ -5,7 +5,10 @@ import json
 import aioboto3
 
 from domain.image_format import extension_to_mime_type
-from domain.lgtm_image_errors import ErrEmbeddingGenerationFailed
+from domain.lgtm_image_errors import (
+    ErrEmbeddingGenerationFailed,
+    ErrInvalidImageExtension,
+)
 
 from botocore.exceptions import BotoCoreError, ClientError
 
@@ -83,7 +86,40 @@ class BedrockClient:
     async def generate_image_embedding(
         self, image_data: str, image_extension: str
     ) -> list[float]:
-        mime_type = extension_to_mime_type(image_extension)
+        """
+        画像からベクトル埋め込みを生成します。
+
+        Args:
+            image_data: base64エンコードされた画像データ
+            image_extension: 画像の拡張子（例: ".jpg", ".jpeg", ".png"）
+                            ※ドット付きで指定する必要があります
+
+        Returns:
+            画像のベクトル埋め込み（float のリスト）
+
+        Raises:
+            ErrEmbeddingGenerationFailed: 以下のいずれかの場合に発生
+                                         - サポート外の拡張子が指定された場合（システム側の設定ミス）
+                                         - Bedrock API呼び出しが失敗した場合
+                                         - レスポンスが不正な場合
+
+        Note:
+            通常、サポート外の拡張子はPydanticバリデーションで事前にチェックされます。
+            このメソッドで拡張子エラーが発生する場合は、バリデーション設定とMIMEマッピングの
+            不整合など、システム側の設定ミスを示しています。
+        """
+        try:
+            mime_type = extension_to_mime_type(image_extension)
+        except ErrInvalidImageExtension as e:
+            # Pydanticバリデーション後にこのエラーが発生するのは異常事態
+            # （バリデーション設定とMIMEマッピングの不整合）
+            logger.error(
+                f"Invalid image extension after validation: {image_extension}. "
+                f"This indicates a configuration mismatch. Error: {e}"
+            )
+            raise ErrEmbeddingGenerationFailed(
+                f"Configuration error: unsupported extension {image_extension} passed validation"
+            ) from e
 
         data_uri = f"data:{mime_type};base64,{image_data}"
 
