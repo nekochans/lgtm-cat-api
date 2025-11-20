@@ -14,5 +14,5 @@ class LgtmImageSearchRepositoryInterface(Protocol):
         self,
         image_data: str,
         image_extension: str,
-        max_results: int = 9,
+        max_results: int = DEFAULT_SEARCH_MAX_RESULTS,
     ) -> list[LgtmImageSearchResult]: ...
