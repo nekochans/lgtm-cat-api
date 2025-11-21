@@ -1,6 +1,5 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
-from pydantic import HttpUrl
 from typing import TYPE_CHECKING
 
 from domain.repository.lgtm_image_search_repository_interface import (
@@ -246,7 +245,7 @@ class LgtmImageController:
             image_items = [
                 LgtmImageSearchItem(
                     id=img["id"],
-                    url=HttpUrl(img["url"]),
+                    url=img["url"],  # type: ignore[arg-type]
                     similarityScore=img["similarity_score"],
                 )
                 for img in similar_images
