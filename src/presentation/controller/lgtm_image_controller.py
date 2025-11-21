@@ -209,7 +209,11 @@ class LgtmImageController:
 
             # ドメインエンティティをレスポンスモデルに変換（順序を保持）
             image_items = [
-                LgtmImageItem(id=result["id"], url=result["url"])  # type: ignore[arg-type]
+                LgtmImageSearchItem(
+                    id=result["id"],
+                    url=result["url"],  # type: ignore[arg-type]
+                    similarityScore=result["similarity_score"],
+                )
                 for result in results
             ]
 

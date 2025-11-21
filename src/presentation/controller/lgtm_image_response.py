@@ -74,7 +74,7 @@ class LgtmImageCreateResponse(BaseModel):
 class LgtmImageSearchResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    lgtm_images: list[LgtmImageItem] = Field(
+    lgtm_images: list["LgtmImageSearchItem"] = Field(
         ...,
         alias="lgtmImages",
         description="検索結果の画像リスト",
@@ -83,10 +83,12 @@ class LgtmImageSearchResponse(BaseModel):
                 {
                     "id": "1",
                     "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                    "similarityScore": 0.9,
                 },
                 {
                     "id": "2",
                     "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                    "similarityScore": 0.8,
                 },
             ]
         ],

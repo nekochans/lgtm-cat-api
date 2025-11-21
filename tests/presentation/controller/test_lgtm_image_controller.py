@@ -640,9 +640,21 @@ class TestLgtmImageController:
         mock_repository = AsyncMock()
         mock_repository.search_by_text = AsyncMock(
             return_value=[
-                {"id": "1", "url": "https://example.com/lgtm1.webp"},
-                {"id": "2", "url": "https://example.com/lgtm2.webp"},
-                {"id": "3", "url": "https://example.com/lgtm3.webp"},
+                {
+                    "id": "1",
+                    "url": "https://example.com/lgtm1.webp",
+                    "similarity_score": 0.9,
+                },
+                {
+                    "id": "2",
+                    "url": "https://example.com/lgtm2.webp",
+                    "similarity_score": 0.8,
+                },
+                {
+                    "id": "3",
+                    "url": "https://example.com/lgtm3.webp",
+                    "similarity_score": 0.7,
+                },
             ]
         )
 
@@ -667,8 +679,10 @@ class TestLgtmImageController:
         for item in content["lgtmImages"]:
             assert "id" in item
             assert "url" in item
+            assert "similarityScore" in item
             assert isinstance(item["id"], str)
             assert isinstance(item["url"], str)
+            assert isinstance(item["similarityScore"], float)
 
         # Assert - モックが正しく呼ばれたことを検証
         mock_repository.search_by_text.assert_called_once()
