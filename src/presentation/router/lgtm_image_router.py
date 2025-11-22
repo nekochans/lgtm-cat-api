@@ -296,7 +296,7 @@ async def search_lgtm_images_by_text(
 
 
 @router.post(
-    "/lgtm-images/search/image",
+    "/lgtm-images/search/image-from-data",
     summary="画像から類似したLGTM画像を検索",
     description="ユーザーから入力された画像と類似する画像を検索して返します。最大9件まで返却されます。",
     response_description="類似画像検索結果のリスト（類似度の高い順）",
