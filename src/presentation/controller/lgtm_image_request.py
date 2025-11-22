@@ -2,14 +2,12 @@
 
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from domain.create_lgtm_image import can_convert_image_extension
 
 
 class LgtmImageCreateRequest(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
     image: str = Field(
         ...,
         description="base64エンコードされた画像データ",
@@ -31,13 +29,11 @@ class LgtmImageCreateRequest(BaseModel):
 
 
 class LgtmImageCreateFromUrlRequest(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
     image_url: str = Field(
         ...,
         alias="imageUrl",
         description=(
-            "画像のURL（httpsのみ許可）。"
+            "画像のURL(httpsのみ許可)。"
             "URLの形式・スキームを検証します。"
             "許可ドメインのチェックは infrastructure 層で実施します。"
         ),
@@ -64,8 +60,6 @@ class LgtmImageCreateFromUrlRequest(BaseModel):
 
 
 class TextSearchRequest(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
     query: str = Field(
         ...,
         description="検索クエリテキスト",
@@ -84,8 +78,6 @@ class TextSearchRequest(BaseModel):
 
 
 class LgtmImageSearchByImageRequest(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
     image: str = Field(
         ...,
         description="base64エンコードされた画像データ",
