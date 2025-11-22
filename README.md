@@ -193,6 +193,7 @@ APIはシンプルなRESTパターンに従い、3つのエンドポイントを
 3. **GET /lgtm-images/recently-created** - 最近作成されたLGTM画像を返す
 4. **POST /lgtm-images/search/text** - テキストからLGTM画像を検索
 5. **POST /lgtm-images/search/image-from-data** - 画像データから類似したLGTM画像を検索
+6. **POST /lgtm-images/search/image-from-url** - 署名付きURLから類似したLGTM画像を検索
 
 レスポンスモデルはPydanticのBaseModelを使用して定義されており、JSONフィールドにはキャメルケースを使用します（例: `imageUrl`, `imageExtension`）。
 

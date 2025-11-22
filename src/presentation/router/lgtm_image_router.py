@@ -16,11 +16,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import (
     get_aws_bedrock_embedding_model_id,
     get_aws_bedrock_region,
+    get_image_allowed_domain,
+    get_image_fetch_timeout,
     get_lgtm_images_base_url,
+    get_max_image_size,
     get_s3_vector_bucket_name,
     get_s3_vector_index_name,
     get_s3_vector_region,
     get_upload_s3_bucket_name,
+)
+from domain.repository.image_fetch_repository_interface import (
+    ImageFetchRepositoryInterface,
 )
 from domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
@@ -35,11 +41,15 @@ from infrastructure.bedrock_client import BedrockClient
 from infrastructure.database import create_db_session
 from infrastructure.lgtm_image_repository import LgtmImageRepository
 from infrastructure.lgtm_image_search_repository import LgtmImageSearchRepository
+from infrastructure.repository.http_image_fetch_repository import (
+    HttpImageFetchRepository,
+)
 from infrastructure.s3_repository import S3Repository
 from infrastructure.s3_vector_client import S3VectorClient
 from presentation.controller.lgtm_image_controller import LgtmImageController
 from presentation.controller.lgtm_image_request import (
     LgtmImageCreateRequest,
+    LgtmImageSearchByImageFromUrlRequest,
     LgtmImageSearchByImageRequest,
     TextSearchRequest,
 )
@@ -79,6 +89,17 @@ def create_lgtm_image_search_repository(
         index_name=s3_vector_index_name,
     )
     return LgtmImageSearchRepository(bedrock_client, s3_vector_client, base_url)
+
+
+def create_image_fetch_repository(
+    timeout: Annotated[int, Depends(get_image_fetch_timeout)],
+    max_size: Annotated[int, Depends(get_max_image_size)],
+    allowed_domain: Annotated[str, Depends(get_image_allowed_domain)],
+) -> ImageFetchRepositoryInterface:
+    """画像取得リポジトリのインスタンスを生成"""
+    return HttpImageFetchRepository(
+        timeout=timeout, max_size=max_size, allowed_domain=allowed_domain
+    )
 
 
 @router.post(
@@ -366,3 +387,102 @@ async def search_by_image(
     token_payload: Annotated[dict[str, Any], Depends(verify_token)],
 ) -> JSONResponse:
     return await LgtmImageController.search_by_image(repository, request_body)
+
+
+@router.post(
+    "/lgtm-images/search/image-from-url",
+    summary="署名付きURLから類似したLGTM画像を検索",
+    description="許可された署名付きURLから画像を取得して類似画像を検索して返します。最大9件まで返却されます。",
+    response_description="類似画像検索結果のリスト（類似度の高い順）",
+    response_model=LgtmImageSearchByImageResponse,
+    tags=["LGTM Images"],
+    responses={
+        200: {
+            "description": "成功時のレスポンス",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "lgtmImages": [
+                            {
+                                "id": "1",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "similarityScore": 0.95,
+                            },
+                            {
+                                "id": "2",
+                                "url": "https://lgtm-images.lgtmeow.com/2021/03/16/23/6947f291-a46e-453c-a230-0d756d7174cb.webp",
+                                "similarityScore": 0.87,
+                            },
+                        ]
+                    }
+                }
+            },
+        },
+        400: {
+            "description": "無効なURLまたは許可されていないドメイン",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "invalid_url": {
+                            "summary": "無効なURL",
+                            "value": {"error": "Invalid URL provided"},
+                        },
+                        "url_not_accessible": {
+                            "summary": "URLにアクセスできない",
+                            "value": {"error": "URL not accessible"},
+                        },
+                    }
+                }
+            },
+        },
+        401: {
+            "description": "認証エラー",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Invalid authorization header"}
+                }
+            },
+        },
+        422: {
+            "description": "画像取得失敗または無効な画像形式",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "fetch_failed": {
+                            "summary": "画像取得失敗",
+                            "value": {"error": "Failed to fetch image from URL"},
+                        },
+                        "invalid_format": {
+                            "summary": "無効な画像形式",
+                            "value": {
+                                "error": "Invalid image extension or unsupported format"
+                            },
+                        },
+                    }
+                }
+            },
+        },
+        500: {
+            "description": "サーバーエラー",
+            "content": {
+                "application/json": {"example": {"error": "Internal server error"}}
+            },
+        },
+    },
+)
+async def search_by_image_from_url(
+    request_body: LgtmImageSearchByImageFromUrlRequest,
+    image_fetch_repository: Annotated[
+        ImageFetchRepositoryInterface, Depends(create_image_fetch_repository)
+    ],
+    repository: Annotated[
+        LgtmImageSearchRepositoryInterface,
+        Depends(create_lgtm_image_search_repository),
+    ],
+    token_payload: Annotated[dict[str, Any], Depends(verify_token)],
+) -> JSONResponse:
+    return await LgtmImageController.search_by_image_from_url(
+        image_fetch_repository,
+        repository,
+        request_body,
+    )
