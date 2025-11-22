@@ -79,7 +79,7 @@ class LgtmImageController:
                 image=request_body.image,
                 image_extension=request_body.image_extension,
             )
-            response = LgtmImageCreateResponse(imageUrl=uploaded_image["url"])  # type: ignore[arg-type]
+            response = LgtmImageCreateResponse(image_url=uploaded_image["url"])  # type: ignore[arg-type]
             return create_json_response(response, status_code=202)
         except ErrInvalidImageExtension as e:
             logger.error(f"Invalid image extension: {e}")
@@ -111,7 +111,7 @@ class LgtmImageController:
                 base_url=base_url,
                 image_url=request_body.image_url,
             )
-            response = LgtmImageCreateResponse(imageUrl=uploaded_image["url"])  # type: ignore[arg-type]
+            response = LgtmImageCreateResponse(image_url=uploaded_image["url"])  # type: ignore[arg-type]
             return create_json_response(response, status_code=202)
         except ErrInvalidUrl as e:
             logger.error(f"Invalid URL provided: {e}")
@@ -156,7 +156,7 @@ class LgtmImageController:
                 LgtmImageItem(id=image["id"], url=image["url"])  # type: ignore[arg-type]
                 for image in images
             ]
-            response = LgtmImageRandomListResponse(lgtmImages=image_items)
+            response = LgtmImageRandomListResponse(lgtm_images=image_items)
             return create_json_response(response)
         except ErrRecordCount:
             logger.error("Insufficient LGTM images available")
@@ -185,7 +185,7 @@ class LgtmImageController:
                 LgtmImageItem(id=image["id"], url=image["url"])  # type: ignore[arg-type]
                 for image in images
             ]
-            response = LgtmImageRecentlyCreatedListResponse(lgtmImages=image_items)
+            response = LgtmImageRecentlyCreatedListResponse(lgtm_images=image_items)
             return create_json_response(response)
         except ErrRecordCount:
             logger.error("Insufficient LGTM images available")
@@ -212,12 +212,12 @@ class LgtmImageController:
                 LgtmImageSearchItem(
                     id=result["id"],
                     url=result["url"],  # type: ignore[arg-type]
-                    similarityScore=result["similarity_score"],
+                    similarity_score=result["similarity_score"],
                 )
                 for result in results
             ]
 
-            response = LgtmImageSearchResponse(lgtmImages=image_items)
+            response = LgtmImageSearchResponse(lgtm_images=image_items)
             return create_json_response(response)
 
         except ErrInvalidSearchQuery as e:
@@ -250,11 +250,11 @@ class LgtmImageController:
                 LgtmImageSearchItem(
                     id=img["id"],
                     url=img["url"],  # type: ignore[arg-type]
-                    similarityScore=img["similarity_score"],
+                    similarity_score=img["similarity_score"],
                 )
                 for img in similar_images
             ]
-            response = LgtmImageSearchByImageResponse(lgtmImages=image_items)
+            response = LgtmImageSearchByImageResponse(lgtm_images=image_items)
 
             # JSONResponse返却
             return create_json_response(response)
