@@ -24,6 +24,7 @@ from log.url_sanitizer import sanitize_url_for_logging
 from presentation.controller.lgtm_image_request import (
     LgtmImageCreateFromUrlRequest,
     LgtmImageCreateRequest,
+    LgtmImageSearchByImageFromUrlRequest,
     LgtmImageSearchByImageRequest,
 )
 from presentation.controller.lgtm_image_response import (
@@ -50,6 +51,9 @@ from usecase.retrieve_recently_created_lgtm_images_usecase import (
     RetrieveRecentlyCreatedLgtmImagesUsecase,
 )
 from usecase.search_lgtm_images_by_image import SearchLgtmImagesByImageUsecase
+from usecase.search_lgtm_images_by_image_from_url_usecase import (
+    SearchLgtmImagesByImageFromUrlUsecase,
+)
 from usecase.search_lgtm_images_by_text import SearchLgtmImagesByTextUsecase
 
 if TYPE_CHECKING:
@@ -262,4 +266,66 @@ class LgtmImageController:
         except Exception as e:
             # エラーハンドリング
             logger.error(f"Error searching LGTM images by image: {e}")
+            return create_error_response(e)
+
+    @staticmethod
+    async def search_by_image_from_url(
+        image_fetch_repository: "ImageFetchRepositoryInterface",
+        repository: LgtmImageSearchRepositoryInterface,
+        request: LgtmImageSearchByImageFromUrlRequest,
+    ) -> JSONResponse:
+        sanitized_url = sanitize_url_for_logging(request.image_url)
+        logger.info(
+            "Searching LGTM images by image from URL",
+            extra={"image_url": sanitized_url},
+        )
+
+        try:
+            # ユースケース実行
+            similar_images = await SearchLgtmImagesByImageFromUrlUsecase.execute(
+                image_fetch_repository=image_fetch_repository,
+                search_repository=repository,
+                image_url=request.image_url,
+            )
+
+            # レスポンスモデルに変換
+            image_items = [
+                LgtmImageSearchItem(
+                    id=img["id"],
+                    url=img["url"],  # type: ignore[arg-type]
+                    similarity_score=img["similarity_score"],
+                )
+                for img in similar_images
+            ]
+            response = LgtmImageSearchByImageResponse(lgtm_images=image_items)
+
+            # JSONResponse返却
+            return create_json_response(response)
+
+        except ErrInvalidUrl as e:
+            logger.error(f"Invalid URL provided: {e}")
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Invalid URL provided"},
+            )
+        except ErrUrlNotAccessible as e:
+            logger.error(f"URL not accessible: {e}")
+            return JSONResponse(
+                status_code=400,
+                content={"error": "URL not accessible"},
+            )
+        except ErrImageFetchFailed as e:
+            logger.error(f"Failed to fetch image: {e}")
+            return JSONResponse(
+                status_code=422,
+                content={"error": "Failed to fetch image from URL"},
+            )
+        except ErrInvalidImageExtension as e:
+            logger.error(f"Invalid image extension: {e}")
+            return JSONResponse(
+                status_code=422,
+                content={"error": "Invalid image extension or unsupported format"},
+            )
+        except Exception as e:
+            logger.error(f"Error searching LGTM images by image from URL: {e}")
             return create_error_response(e)

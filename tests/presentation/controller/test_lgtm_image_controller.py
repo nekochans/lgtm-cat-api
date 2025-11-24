@@ -15,6 +15,7 @@ from presentation.controller.lgtm_image_controller import LgtmImageController
 from presentation.controller.lgtm_image_request import (
     LgtmImageCreateFromUrlRequest,
     LgtmImageCreateRequest,
+    LgtmImageSearchByImageFromUrlRequest,
     LgtmImageSearchByImageRequest,
 )
 from tests.fixtures.test_data_helpers import insert_test_lgtm_images
@@ -880,3 +881,227 @@ class TestLgtmImageController:
         assert content["error"] == "Internal server error"
 
         mock_repository.search_by_image.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_search_by_image_from_url_success(self) -> None:
+        """正常系: 署名付きURLから画像を取得して検索に成功する."""
+        # Arrange
+        image_url = "https://example.com/image.png"
+        expected_data = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
+
+        mock_image_fetch_repo = AsyncMock()
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            return_value={"data": expected_data, "mime_type": "image/png"}
+        )
+
+        mock_search_repo = AsyncMock()
+        mock_search_repo.search_by_image = AsyncMock(
+            return_value=[
+                {
+                    "id": "1",
+                    "url": "https://lgtm-images.lgtmeow.com/image1.webp",
+                    "similarity_score": 0.95,
+                },
+                {
+                    "id": "2",
+                    "url": "https://lgtm-images.lgtmeow.com/image2.webp",
+                    "similarity_score": 0.87,
+                },
+            ]
+        )
+
+        request_body = LgtmImageSearchByImageFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        result = await LgtmImageController.search_by_image_from_url(
+            image_fetch_repository=mock_image_fetch_repo,
+            repository=mock_search_repo,
+            request=request_body,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 200
+
+        content = json.loads(bytes(result.body))
+        assert "lgtmImages" in content
+        assert len(content["lgtmImages"]) == 2
+        assert content["lgtmImages"][0]["id"] == "1"
+        assert content["lgtmImages"][0]["similarityScore"] == 0.95
+        assert content["lgtmImages"][1]["id"] == "2"
+        assert content["lgtmImages"][1]["similarityScore"] == 0.87
+
+        mock_image_fetch_repo.fetch_image.assert_called_once_with(image_url)
+        mock_search_repo.search_by_image.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_search_by_image_from_url_invalid_url(self) -> None:
+        """異常系: 無効なURLの場合、400エラーを返す."""
+        # Arrange
+        image_url = "https://localhost/image.png"
+
+        mock_image_fetch_repo = AsyncMock()
+        from domain.lgtm_image_errors import ErrInvalidUrl
+
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            side_effect=ErrInvalidUrl("Invalid URL")
+        )
+
+        mock_search_repo = AsyncMock()
+
+        request_body = LgtmImageSearchByImageFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        result = await LgtmImageController.search_by_image_from_url(
+            image_fetch_repository=mock_image_fetch_repo,
+            repository=mock_search_repo,
+            request=request_body,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 400
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "Invalid URL provided" in content["error"]
+
+        mock_search_repo.search_by_image.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_search_by_image_from_url_url_not_accessible(self) -> None:
+        """異常系: URLにアクセスできない場合、400エラーを返す."""
+        # Arrange
+        image_url = "https://example.com/not-found.png"
+
+        mock_image_fetch_repo = AsyncMock()
+        from domain.lgtm_image_errors import ErrUrlNotAccessible
+
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            side_effect=ErrUrlNotAccessible("URL not found")
+        )
+
+        mock_search_repo = AsyncMock()
+
+        request_body = LgtmImageSearchByImageFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        result = await LgtmImageController.search_by_image_from_url(
+            image_fetch_repository=mock_image_fetch_repo,
+            repository=mock_search_repo,
+            request=request_body,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 400
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "URL not accessible" in content["error"]
+
+        mock_search_repo.search_by_image.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_search_by_image_from_url_fetch_failed(self) -> None:
+        """異常系: 画像取得失敗の場合、422エラーを返す."""
+        # Arrange
+        image_url = "https://example.com/broken-image.png"
+
+        mock_image_fetch_repo = AsyncMock()
+        from domain.lgtm_image_errors import ErrImageFetchFailed
+
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            side_effect=ErrImageFetchFailed("Failed to fetch image")
+        )
+
+        mock_search_repo = AsyncMock()
+
+        request_body = LgtmImageSearchByImageFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        result = await LgtmImageController.search_by_image_from_url(
+            image_fetch_repository=mock_image_fetch_repo,
+            repository=mock_search_repo,
+            request=request_body,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 422
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "Failed to fetch image from URL" in content["error"]
+
+        mock_search_repo.search_by_image.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_search_by_image_from_url_invalid_extension(self) -> None:
+        """異常系: 無効な画像形式の場合、422エラーを返す."""
+        # Arrange
+        image_url = "https://example.com/document.pdf"
+
+        mock_image_fetch_repo = AsyncMock()
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            return_value={"data": b"pdf data", "mime_type": "application/pdf"}
+        )
+
+        mock_search_repo = AsyncMock()
+
+        request_body = LgtmImageSearchByImageFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        from domain.lgtm_image_errors import ErrInvalidImageExtension
+
+        with patch(
+            "presentation.controller.lgtm_image_controller.SearchLgtmImagesByImageFromUrlUsecase.execute",
+            side_effect=ErrInvalidImageExtension("Unsupported MIME type"),
+        ):
+            result = await LgtmImageController.search_by_image_from_url(
+                image_fetch_repository=mock_image_fetch_repo,
+                repository=mock_search_repo,
+                request=request_body,
+            )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 422
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "Invalid image extension or unsupported format" in content["error"]
+
+    @pytest.mark.asyncio
+    async def test_search_by_image_from_url_general_exception(self) -> None:
+        """異常系: 予期しないエラーが発生した場合、500エラーを返す."""
+        # Arrange
+        image_url = "https://example.com/image.png"
+
+        mock_image_fetch_repo = AsyncMock()
+        mock_image_fetch_repo.fetch_image = AsyncMock(
+            return_value={"data": b"image data", "mime_type": "image/png"}
+        )
+
+        mock_search_repo = AsyncMock()
+
+        request_body = LgtmImageSearchByImageFromUrlRequest(imageUrl=image_url)
+
+        # Act
+        with patch(
+            "presentation.controller.lgtm_image_controller.SearchLgtmImagesByImageFromUrlUsecase.execute",
+            side_effect=Exception("Unexpected error"),
+        ):
+            result = await LgtmImageController.search_by_image_from_url(
+                image_fetch_repository=mock_image_fetch_repo,
+                repository=mock_search_repo,
+                request=request_body,
+            )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 500
+
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert content["error"] == "Internal server error"
