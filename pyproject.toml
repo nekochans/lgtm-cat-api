@@ -37,7 +37,7 @@ dev = [
     "cryptography>=46.0.3",
     "types-aioboto3[s3]>=15.4.0",
     "types-python-jose>=3.5.0",
-    "boto3-stubs[bedrock-runtime,s3vectors]>=1.40.71",
+    "boto3-stubs[bedrock-runtime,s3vectors,rekognition]>=1.40.71",
 ]
 
 [tool.hatch.metadata]

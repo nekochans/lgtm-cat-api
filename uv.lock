@@ -226,6 +226,9 @@ wheels = [
 bedrock-runtime = [
     { name = "mypy-boto3-bedrock-runtime" },
 ]
+rekognition = [
+    { name = "mypy-boto3-rekognition" },
+]
 s3vectors = [
     { name = "mypy-boto3-s3vectors" },
 ]
@@ -664,7 +667,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "boto3-stubs", extra = ["bedrock-runtime", "s3vectors"] },
+    { name = "boto3-stubs", extra = ["bedrock-runtime", "rekognition", "s3vectors"] },
     { name = "cryptography" },
     { name = "mypy" },
     { name = "pytest" },
@@ -691,7 +694,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "boto3-stubs", extras = ["bedrock-runtime", "s3vectors"], specifier = ">=1.40.71" },
+    { name = "boto3-stubs", extras = ["bedrock-runtime", "s3vectors", "rekognition"], specifier = ">=1.40.71" },
     { name = "cryptography", specifier = ">=46.0.3" },
     { name = "mypy", specifier = ">=1.18.2" },
     { name = "pytest", specifier = ">=8.4.2" },
@@ -843,6 +846,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/51/d0/ca3c58a1284f9142959fb00889322d4889278c2e4b165350d8e294c07d9c/mypy_boto3_bedrock_runtime-1.40.62.tar.gz", hash = "sha256:5505a60e2b5f9c845ee4778366d49c93c3723f6790d0cec116d8fc5f5609d846", size = 28611, upload-time = "2025-10-29T21:43:02.599Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4b/c5/ad62e5f80684ce5fe878d320634189ef29d00ee294cd62a37f3e51719f47/mypy_boto3_bedrock_runtime-1.40.62-py3-none-any.whl", hash = "sha256:e383e70b5dffb0b335b49fc1b2772f0d35118f99994bc7e731445ba0ab237831", size = 34497, upload-time = "2025-10-29T21:43:01.591Z" },
+]
+
+[[package]]
+name = "mypy-boto3-rekognition"
+version = "1.40.60"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/56/3c/3da19d756d769e575247e90fc68a4f4aa3a29797edd50e556a2ecf2ff9f8/mypy_boto3_rekognition-1.40.60.tar.gz", hash = "sha256:e242e258acb994d078227b3751dcdd50e6f70d6aa89cb1781c958df6634b991a", size = 46301, upload-time = "2025-10-27T19:44:33.707Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/78/5b6cf5d11afb33d09e99fc8447e60c63eba2b9177f912a65aecc6a0fffc8/mypy_boto3_rekognition-1.40.60-py3-none-any.whl", hash = "sha256:acf969a9c1f6da745a0f2604f5e160fe2429fdf80448ba98fa03cad4fdd7ed21", size = 53306, upload-time = "2025-10-27T19:44:31.937Z" },
 ]
 
 [[package]]

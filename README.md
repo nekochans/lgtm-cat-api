@@ -98,6 +98,9 @@ export AWS_BEDROCK_EMBEDDING_MODEL_ID=cohere.embed-v4:0  # デフォルト: cohe
 # AWS S3 Vector設定
 export S3_VECTOR_REGION=us-east-1    # デフォルト: us-east-1
 
+# AWS Rekognition設定（画像認識機能用）
+export AWS_REKOGNITION_REGION=ap-northeast-1  # デフォルト: ap-northeast-1
+
 # Sentry設定（エラー監視）
 export SENTRY_DSN=                   # デフォルト: 空文字（未設定時はSentry無効）
 export SENTRY_ENVIRONMENT=development # デフォルト: development（例: development, staging, production）
