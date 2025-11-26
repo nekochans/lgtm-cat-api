@@ -356,8 +356,8 @@ class LgtmImageController:
             result = await usecase.execute(request.image_url)
 
             response = CatImageValidationResponse(
-                isAcceptableCatImage=result["is_acceptable"],
-                notAcceptableReason=result.get("reason"),
+                is_acceptable_cat_image=result["is_acceptable"],
+                not_acceptable_reason=result.get("reason"),
             )
 
             return create_json_response(response)

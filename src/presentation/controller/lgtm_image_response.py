@@ -129,13 +129,13 @@ class LgtmImageSearchByImageResponse(BaseModel):
 class CatImageValidationResponse(BaseModel):
     is_acceptable_cat_image: bool = Field(
         ...,
-        alias="isAcceptableCatImage",
+        serialization_alias="isAcceptableCatImage",
         description="受け入れ可能な猫画像かどうか",
         examples=[True, False],
     )
     not_acceptable_reason: str | None = Field(
         None,
-        alias="notAcceptableReason",
+        serialization_alias="notAcceptableReason",
         description="受け入れ不可の理由",
         examples=[
             "not cat image",
