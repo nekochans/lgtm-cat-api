@@ -388,9 +388,7 @@ class LgtmImageController:
             )
         except ErrRekognitionFailed as e:
             logger.error(f"Rekognition API error: {e}")
-            return JSONResponse(
-                status_code=500, content={"error": "Image validation failed"}
-            )
+            return create_error_response(e)
         except Exception as e:
             logger.error(f"Unexpected error in validate_cat_image: {e}")
-            return JSONResponse(status_code=500, content={"error": str(e)})
+            return create_error_response(e)

@@ -1313,7 +1313,7 @@ class TestLgtmImageController:
         # Assert
         assert response.status_code == 500
         response_data = json.loads(bytes(response.body))
-        assert response_data["error"] == "Image validation failed"
+        assert response_data["error"] == "Internal server error"
 
     @pytest.mark.asyncio
     @patch("presentation.controller.lgtm_image_controller.ValidateCatImageUseCase")
@@ -1341,4 +1341,4 @@ class TestLgtmImageController:
         # Assert
         assert response.status_code == 500
         response_data = json.loads(bytes(response.body))
-        assert response_data["error"] == "Unexpected error"
+        assert response_data["error"] == "Internal server error"
