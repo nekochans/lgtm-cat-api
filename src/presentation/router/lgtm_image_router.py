@@ -43,6 +43,7 @@ from domain.cat_image_validation_policy import (
     CatImageValidationPolicy,
     DEFAULT_VALIDATION_POLICY,
 )
+from domain.image_analysis_interface import ImageAnalysisServiceInterface
 from infrastructure.bedrock_client import BedrockClient
 from infrastructure.database import create_db_session
 from infrastructure.lgtm_image_repository import LgtmImageRepository
@@ -114,8 +115,8 @@ def create_image_fetch_repository(
 
 def create_image_analysis_service(
     region: Annotated[str, Depends(get_aws_rekognition_region)],
-) -> RekognitionImageAnalysisService:
-    """RekognitionImageAnalysisServiceインスタンスを生成"""
+) -> ImageAnalysisServiceInterface:
+    """ImageAnalysisServiceInterfaceインスタンスを生成"""
     return RekognitionImageAnalysisService(region=region)
 
 
@@ -585,7 +586,7 @@ async def search_by_image_from_url(
 async def validate_cat_image(
     request_body: CatImageValidationRequest,
     image_analysis_service: Annotated[
-        RekognitionImageAnalysisService, Depends(create_image_analysis_service)
+        ImageAnalysisServiceInterface, Depends(create_image_analysis_service)
     ],
     image_fetch_repository: Annotated[
         ImageFetchRepositoryInterface, Depends(create_image_fetch_repository)
