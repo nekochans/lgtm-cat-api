@@ -11,7 +11,7 @@ from domain.cat_image_validation_policy import (
 )
 from usecase.validate_cat_image_usecase import ValidateCatImageUseCase
 from domain.lgtm_image_errors import ErrImageFetchFailed
-from domain.image_analysis_types import (
+from domain.image_analysis_interface import (
     FaceDetection,
     LabelDetection,
     ModerationLabelDetection,
@@ -21,10 +21,10 @@ from domain.image_analysis_types import (
 @pytest.mark.asyncio
 async def test_execute_acceptable_cat_image() -> None:
     """受け入れ可能な猫画像のテスト"""
-    mock_rekognition_client = AsyncMock()
-    mock_rekognition_client.detect_moderation_labels = AsyncMock(return_value=[])
-    mock_rekognition_client.detect_faces = AsyncMock(return_value=[])
-    mock_rekognition_client.detect_labels = AsyncMock(
+    mock_image_analysis_service = AsyncMock()
+    mock_image_analysis_service.detect_moderation_labels = AsyncMock(return_value=[])
+    mock_image_analysis_service.detect_faces = AsyncMock(return_value=[])
+    mock_image_analysis_service.detect_labels = AsyncMock(
         return_value=[LabelDetection(name="Cat", confidence=95.0)]
     )
 
@@ -34,7 +34,7 @@ async def test_execute_acceptable_cat_image() -> None:
     )
 
     usecase = ValidateCatImageUseCase(
-        mock_rekognition_client, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
+        mock_image_analysis_service, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
     )
     result = await usecase.execute("https://example.com/cat.jpg")
 
@@ -45,10 +45,10 @@ async def test_execute_acceptable_cat_image() -> None:
 @pytest.mark.asyncio
 async def test_execute_not_cat_image() -> None:
     """猫が写っていない画像のテスト"""
-    mock_rekognition_client = AsyncMock()
-    mock_rekognition_client.detect_moderation_labels = AsyncMock(return_value=[])
-    mock_rekognition_client.detect_faces = AsyncMock(return_value=[])
-    mock_rekognition_client.detect_labels = AsyncMock(
+    mock_image_analysis_service = AsyncMock()
+    mock_image_analysis_service.detect_moderation_labels = AsyncMock(return_value=[])
+    mock_image_analysis_service.detect_faces = AsyncMock(return_value=[])
+    mock_image_analysis_service.detect_labels = AsyncMock(
         return_value=[LabelDetection(name="Dog", confidence=95.0)]
     )
 
@@ -58,7 +58,7 @@ async def test_execute_not_cat_image() -> None:
     )
 
     usecase = ValidateCatImageUseCase(
-        mock_rekognition_client, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
+        mock_image_analysis_service, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
     )
     result = await usecase.execute("https://example.com/dog.jpg")
 
@@ -69,13 +69,13 @@ async def test_execute_not_cat_image() -> None:
 @pytest.mark.asyncio
 async def test_execute_person_face_detected() -> None:
     """人の顔が検出された画像のテスト"""
-    mock_rekognition_client = AsyncMock()
-    mock_rekognition_client.detect_moderation_labels = AsyncMock(return_value=[])
+    mock_image_analysis_service = AsyncMock()
+    mock_image_analysis_service.detect_moderation_labels = AsyncMock(return_value=[])
     # 信頼度97.0の顔を検出（96.0超でNG）
-    mock_rekognition_client.detect_faces = AsyncMock(
+    mock_image_analysis_service.detect_faces = AsyncMock(
         return_value=[FaceDetection(confidence=97.0)]
     )
-    mock_rekognition_client.detect_labels = AsyncMock(
+    mock_image_analysis_service.detect_labels = AsyncMock(
         return_value=[LabelDetection(name="Cat", confidence=95.0)]
     )
 
@@ -85,7 +85,7 @@ async def test_execute_person_face_detected() -> None:
     )
 
     usecase = ValidateCatImageUseCase(
-        mock_rekognition_client, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
+        mock_image_analysis_service, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
     )
     result = await usecase.execute("https://example.com/person.jpg")
 
@@ -96,13 +96,13 @@ async def test_execute_person_face_detected() -> None:
 @pytest.mark.asyncio
 async def test_execute_moderation_content_detected() -> None:
     """不適切なコンテンツが検出された画像のテスト"""
-    mock_rekognition_client = AsyncMock()
+    mock_image_analysis_service = AsyncMock()
     # 不適切なコンテンツが検出された場合（空リストでない）
-    mock_rekognition_client.detect_moderation_labels = AsyncMock(
+    mock_image_analysis_service.detect_moderation_labels = AsyncMock(
         return_value=[ModerationLabelDetection(name="Explicit Nudity", confidence=95.0)]
     )
-    mock_rekognition_client.detect_faces = AsyncMock(return_value=[])
-    mock_rekognition_client.detect_labels = AsyncMock(
+    mock_image_analysis_service.detect_faces = AsyncMock(return_value=[])
+    mock_image_analysis_service.detect_labels = AsyncMock(
         return_value=[LabelDetection(name="Cat", confidence=95.0)]
     )
 
@@ -112,7 +112,7 @@ async def test_execute_moderation_content_detected() -> None:
     )
 
     usecase = ValidateCatImageUseCase(
-        mock_rekognition_client, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
+        mock_image_analysis_service, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
     )
     result = await usecase.execute("https://example.com/nsfw.jpg")
 
@@ -123,14 +123,14 @@ async def test_execute_moderation_content_detected() -> None:
 @pytest.mark.asyncio
 async def test_execute_image_fetch_failed() -> None:
     """画像取得失敗のテスト"""
-    mock_rekognition_client = AsyncMock()
+    mock_image_analysis_service = AsyncMock()
     mock_image_fetch_repo = AsyncMock()
     mock_image_fetch_repo.fetch_image = AsyncMock(
         side_effect=ErrImageFetchFailed("Failed to fetch image")
     )
 
     usecase = ValidateCatImageUseCase(
-        mock_rekognition_client, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
+        mock_image_analysis_service, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
     )
     result = await usecase.execute("https://example.com/invalid.jpg")
 
@@ -149,11 +149,11 @@ async def test_execute_with_custom_policy() -> None:
         "labels_min_confidence": 75.0,
     }
 
-    mock_rekognition_client = AsyncMock()
-    mock_rekognition_client.detect_moderation_labels = AsyncMock(return_value=[])
-    mock_rekognition_client.detect_faces = AsyncMock(return_value=[])
+    mock_image_analysis_service = AsyncMock()
+    mock_image_analysis_service.detect_moderation_labels = AsyncMock(return_value=[])
+    mock_image_analysis_service.detect_faces = AsyncMock(return_value=[])
     # 信頼度75.0の猫ラベル（カスタムポリシーでは70.0超でOK）
-    mock_rekognition_client.detect_labels = AsyncMock(
+    mock_image_analysis_service.detect_labels = AsyncMock(
         return_value=[LabelDetection(name="Cat", confidence=75.0)]
     )
 
@@ -163,7 +163,7 @@ async def test_execute_with_custom_policy() -> None:
     )
 
     usecase = ValidateCatImageUseCase(
-        mock_rekognition_client, mock_image_fetch_repo, custom_policy
+        mock_image_analysis_service, mock_image_fetch_repo, custom_policy
     )
     result = await usecase.execute("https://example.com/cat.jpg")
 
@@ -173,11 +173,11 @@ async def test_execute_with_custom_policy() -> None:
 @pytest.mark.asyncio
 async def test_execute_cat_confidence_too_low() -> None:
     """猫ラベルの信頼度が低い画像のテスト"""
-    mock_rekognition_client = AsyncMock()
-    mock_rekognition_client.detect_moderation_labels = AsyncMock(return_value=[])
-    mock_rekognition_client.detect_faces = AsyncMock(return_value=[])
+    mock_image_analysis_service = AsyncMock()
+    mock_image_analysis_service.detect_moderation_labels = AsyncMock(return_value=[])
+    mock_image_analysis_service.detect_faces = AsyncMock(return_value=[])
     # 信頼度80.0の猫ラベル（80.0超でないとNG）
-    mock_rekognition_client.detect_labels = AsyncMock(
+    mock_image_analysis_service.detect_labels = AsyncMock(
         return_value=[LabelDetection(name="Cat", confidence=80.0)]
     )
 
@@ -187,7 +187,7 @@ async def test_execute_cat_confidence_too_low() -> None:
     )
 
     usecase = ValidateCatImageUseCase(
-        mock_rekognition_client, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
+        mock_image_analysis_service, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
     )
     result = await usecase.execute("https://example.com/cat.jpg")
 
@@ -198,13 +198,13 @@ async def test_execute_cat_confidence_too_low() -> None:
 @pytest.mark.asyncio
 async def test_execute_face_confidence_borderline() -> None:
     """顔検出の信頼度がボーダーラインの画像のテスト"""
-    mock_rekognition_client = AsyncMock()
-    mock_rekognition_client.detect_moderation_labels = AsyncMock(return_value=[])
+    mock_image_analysis_service = AsyncMock()
+    mock_image_analysis_service.detect_moderation_labels = AsyncMock(return_value=[])
     # 信頼度96.0の顔を検出（96.0超でないとNG、これはOK）
-    mock_rekognition_client.detect_faces = AsyncMock(
+    mock_image_analysis_service.detect_faces = AsyncMock(
         return_value=[FaceDetection(confidence=96.0)]
     )
-    mock_rekognition_client.detect_labels = AsyncMock(
+    mock_image_analysis_service.detect_labels = AsyncMock(
         return_value=[LabelDetection(name="Cat", confidence=95.0)]
     )
 
@@ -214,7 +214,7 @@ async def test_execute_face_confidence_borderline() -> None:
     )
 
     usecase = ValidateCatImageUseCase(
-        mock_rekognition_client, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
+        mock_image_analysis_service, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
     )
     result = await usecase.execute("https://example.com/cat.jpg")
 
@@ -225,10 +225,10 @@ async def test_execute_face_confidence_borderline() -> None:
 @pytest.mark.asyncio
 async def test_execute_multiple_labels_with_cat() -> None:
     """複数のラベルがあり、その中に猫が含まれる画像のテスト"""
-    mock_rekognition_client = AsyncMock()
-    mock_rekognition_client.detect_moderation_labels = AsyncMock(return_value=[])
-    mock_rekognition_client.detect_faces = AsyncMock(return_value=[])
-    mock_rekognition_client.detect_labels = AsyncMock(
+    mock_image_analysis_service = AsyncMock()
+    mock_image_analysis_service.detect_moderation_labels = AsyncMock(return_value=[])
+    mock_image_analysis_service.detect_faces = AsyncMock(return_value=[])
+    mock_image_analysis_service.detect_labels = AsyncMock(
         return_value=[
             LabelDetection(name="Animal", confidence=98.0),
             LabelDetection(name="Mammal", confidence=96.0),
@@ -243,7 +243,7 @@ async def test_execute_multiple_labels_with_cat() -> None:
     )
 
     usecase = ValidateCatImageUseCase(
-        mock_rekognition_client, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
+        mock_image_analysis_service, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
     )
     result = await usecase.execute("https://example.com/cat.jpg")
 

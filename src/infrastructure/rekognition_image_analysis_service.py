@@ -4,14 +4,15 @@ import aioboto3
 from botocore.exceptions import BotoCoreError, ClientError
 
 from domain.lgtm_image_errors import ErrRekognitionFailed
-from domain.image_analysis_types import (
+from domain.image_analysis_interface import (
     FaceDetection,
     LabelDetection,
     ModerationLabelDetection,
+    ImageAnalysisServiceInterface,
 )
 
 
-class RekognitionClient:
+class RekognitionImageAnalysisService(ImageAnalysisServiceInterface):
     def __init__(self, region: str) -> None:
         self.region = region
         self.session = aioboto3.Session()

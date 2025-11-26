@@ -1,7 +1,7 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 """猫画像判定ユースケース"""
 
-from infrastructure.rekognition_client import RekognitionClient
+from domain.image_analysis_interface import ImageAnalysisServiceInterface
 from domain.repository.image_fetch_repository_interface import (
     ImageFetchRepositoryInterface,
 )
@@ -23,11 +23,11 @@ from domain.cat_image_validation_policy import (
 class ValidateCatImageUseCase:
     def __init__(
         self,
-        rekognition_client: RekognitionClient,
+        image_analysis_service: ImageAnalysisServiceInterface,
         image_fetch_repository: ImageFetchRepositoryInterface,
         policy: CatImageValidationPolicy = DEFAULT_VALIDATION_POLICY,
     ) -> None:
-        self.rekognition_client = rekognition_client
+        self.image_analysis_service = image_analysis_service
         self.image_fetch_repository = image_fetch_repository
         self.policy = policy
 
@@ -78,14 +78,14 @@ class ValidateCatImageUseCase:
             return CatImageValidationResult(is_acceptable=False, reason="not cat image")
 
     async def _validate_moderation(self, image_bytes: bytes) -> None:
-        labels = await self.rekognition_client.detect_moderation_labels(
+        labels = await self.image_analysis_service.detect_moderation_labels(
             image_bytes, self.policy["moderation_min_confidence"]
         )
         if labels:
             raise ErrNotModerationImage("Inappropriate content detected")
 
     async def _validate_no_person_face(self, image_bytes: bytes) -> None:
-        faces = await self.rekognition_client.detect_faces(image_bytes)
+        faces = await self.image_analysis_service.detect_faces(image_bytes)
         min_confidence: float = self.policy["face_detection_min_confidence"]
         for face in faces:
             confidence = face["confidence"]
@@ -95,7 +95,7 @@ class ValidateCatImageUseCase:
                 )
 
     async def _validate_cat_presence(self, image_bytes: bytes) -> None:
-        labels = await self.rekognition_client.detect_labels(
+        labels = await self.image_analysis_service.detect_labels(
             image_bytes,
             self.policy["labels_max_count"],
             self.policy["labels_min_confidence"],

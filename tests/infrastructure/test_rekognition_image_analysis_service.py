@@ -5,27 +5,29 @@ import pytest
 from botocore.exceptions import ClientError
 
 from domain.lgtm_image_errors import ErrRekognitionFailed
-from domain.image_analysis_types import (
+from domain.image_analysis_interface import (
     FaceDetection,
     LabelDetection,
     ModerationLabelDetection,
 )
-from infrastructure.rekognition_client import RekognitionClient
+from infrastructure.rekognition_image_analysis_service import (
+    RekognitionImageAnalysisService,
+)
 
 
 @pytest.mark.asyncio
 async def test_detect_moderation_labels_success() -> None:
     """DetectModerationLabels成功時のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         mock_rekognition.detect_moderation_labels = AsyncMock(
             return_value={"ModerationLabels": []}
         )
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
-        result = await client.detect_moderation_labels(b"fake_image_data", 40.0)
+        result = await service.detect_moderation_labels(b"fake_image_data", 40.0)
 
         assert result == []
         mock_rekognition.detect_moderation_labels.assert_called_once_with(
@@ -36,7 +38,7 @@ async def test_detect_moderation_labels_success() -> None:
 @pytest.mark.asyncio
 async def test_detect_moderation_labels_with_labels() -> None:
     """DetectModerationLabels: ラベルが検出された場合のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
     # AWS Rekognitionからのレスポンス（dict形式）
     aws_response_labels = [
@@ -50,14 +52,14 @@ async def test_detect_moderation_labels_with_labels() -> None:
         ModerationLabelDetection(name="Suggestive", confidence=60.2),
     ]
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         mock_rekognition.detect_moderation_labels = AsyncMock(
             return_value={"ModerationLabels": aws_response_labels}
         )
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
-        result = await client.detect_moderation_labels(b"fake_image_data", 50.0)
+        result = await service.detect_moderation_labels(b"fake_image_data", 50.0)
 
         assert result == expected_labels
         mock_rekognition.detect_moderation_labels.assert_called_once_with(
@@ -68,9 +70,9 @@ async def test_detect_moderation_labels_with_labels() -> None:
 @pytest.mark.asyncio
 async def test_detect_moderation_labels_failure() -> None:
     """DetectModerationLabels失敗時のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         error_response = {
             "Error": {"Code": "InvalidParameterException", "Message": "API Error"}
@@ -81,7 +83,7 @@ async def test_detect_moderation_labels_failure() -> None:
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
         with pytest.raises(ErrRekognitionFailed) as exc_info:
-            await client.detect_moderation_labels(b"fake_image_data", 40.0)
+            await service.detect_moderation_labels(b"fake_image_data", 40.0)
 
         assert "DetectModerationLabels failed" in str(exc_info.value)
 
@@ -89,9 +91,9 @@ async def test_detect_moderation_labels_failure() -> None:
 @pytest.mark.asyncio
 async def test_detect_moderation_labels_unexpected_exception() -> None:
     """DetectModerationLabels予期しない例外のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         # 予期しない例外を発生させる
         mock_rekognition.detect_moderation_labels = AsyncMock(
@@ -100,7 +102,7 @@ async def test_detect_moderation_labels_unexpected_exception() -> None:
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
         with pytest.raises(ErrRekognitionFailed) as exc_info:
-            await client.detect_moderation_labels(b"fake_image_data", 40.0)
+            await service.detect_moderation_labels(b"fake_image_data", 40.0)
 
         assert "Unexpected error in DetectModerationLabels" in str(exc_info.value)
 
@@ -108,14 +110,14 @@ async def test_detect_moderation_labels_unexpected_exception() -> None:
 @pytest.mark.asyncio
 async def test_detect_faces_success() -> None:
     """DetectFaces成功時のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         mock_rekognition.detect_faces = AsyncMock(return_value={"FaceDetails": []})
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
-        result = await client.detect_faces(b"fake_image_data")
+        result = await service.detect_faces(b"fake_image_data")
 
         assert result == []
         mock_rekognition.detect_faces.assert_called_once_with(
@@ -126,7 +128,7 @@ async def test_detect_faces_success() -> None:
 @pytest.mark.asyncio
 async def test_detect_faces_with_faces() -> None:
     """DetectFaces: 顔が検出された場合のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
     # AWS Rekognitionのレスポンス形式
     aws_faces = [
@@ -140,14 +142,14 @@ async def test_detect_faces_with_faces() -> None:
         FaceDetection(confidence=98.2),
     ]
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         mock_rekognition.detect_faces = AsyncMock(
             return_value={"FaceDetails": aws_faces}
         )
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
-        result = await client.detect_faces(b"fake_image_data")
+        result = await service.detect_faces(b"fake_image_data")
 
         assert result == expected_result
         # Rekognition APIが正しいパラメータで呼び出されたことを検証
@@ -159,9 +161,9 @@ async def test_detect_faces_with_faces() -> None:
 @pytest.mark.asyncio
 async def test_detect_faces_failure() -> None:
     """DetectFaces失敗時のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         error_response = {
             "Error": {"Code": "InvalidParameterException", "Message": "API Error"}
@@ -172,7 +174,7 @@ async def test_detect_faces_failure() -> None:
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
         with pytest.raises(ErrRekognitionFailed) as exc_info:
-            await client.detect_faces(b"fake_image_data")
+            await service.detect_faces(b"fake_image_data")
 
         assert "DetectFaces failed" in str(exc_info.value)
 
@@ -180,9 +182,9 @@ async def test_detect_faces_failure() -> None:
 @pytest.mark.asyncio
 async def test_detect_faces_unexpected_exception() -> None:
     """DetectFaces予期しない例外のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         # 予期しない例外を発生させる
         mock_rekognition.detect_faces = AsyncMock(
@@ -191,7 +193,7 @@ async def test_detect_faces_unexpected_exception() -> None:
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
         with pytest.raises(ErrRekognitionFailed) as exc_info:
-            await client.detect_faces(b"fake_image_data")
+            await service.detect_faces(b"fake_image_data")
 
         assert "Unexpected error in DetectFaces" in str(exc_info.value)
 
@@ -199,14 +201,14 @@ async def test_detect_faces_unexpected_exception() -> None:
 @pytest.mark.asyncio
 async def test_detect_labels_success() -> None:
     """DetectLabels成功時のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         mock_rekognition.detect_labels = AsyncMock(return_value={"Labels": []})
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
-        result = await client.detect_labels(b"fake_image_data", 10, 75.0)
+        result = await service.detect_labels(b"fake_image_data", 10, 75.0)
 
         assert result == []
         mock_rekognition.detect_labels.assert_called_once_with(
@@ -217,7 +219,7 @@ async def test_detect_labels_success() -> None:
 @pytest.mark.asyncio
 async def test_detect_labels_with_cat() -> None:
     """DetectLabels: 猫ラベルが検出された場合のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
     # AWS Rekognitionのレスポンス形式
     aws_labels = [
@@ -233,12 +235,12 @@ async def test_detect_labels_with_cat() -> None:
         LabelDetection(name="Pet", confidence=90.1),
     ]
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         mock_rekognition.detect_labels = AsyncMock(return_value={"Labels": aws_labels})
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
-        result = await client.detect_labels(b"fake_image_data", 5, 80.0)
+        result = await service.detect_labels(b"fake_image_data", 5, 80.0)
 
         assert result == expected_result
         mock_rekognition.detect_labels.assert_called_once_with(
@@ -249,9 +251,9 @@ async def test_detect_labels_with_cat() -> None:
 @pytest.mark.asyncio
 async def test_detect_labels_failure() -> None:
     """DetectLabels失敗時のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         error_response = {
             "Error": {"Code": "InvalidParameterException", "Message": "API Error"}
@@ -262,7 +264,7 @@ async def test_detect_labels_failure() -> None:
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
         with pytest.raises(ErrRekognitionFailed) as exc_info:
-            await client.detect_labels(b"fake_image_data", 10, 75.0)
+            await service.detect_labels(b"fake_image_data", 10, 75.0)
 
         assert "DetectLabels failed" in str(exc_info.value)
 
@@ -270,9 +272,9 @@ async def test_detect_labels_failure() -> None:
 @pytest.mark.asyncio
 async def test_detect_labels_unexpected_exception() -> None:
     """DetectLabels予期しない例外のテスト"""
-    client = RekognitionClient(region="ap-northeast-1")
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
 
-    with patch.object(client.session, "client") as mock_client:
+    with patch.object(service.session, "client") as mock_client:
         mock_rekognition = AsyncMock()
         # 予期しない例外を発生させる
         mock_rekognition.detect_labels = AsyncMock(
@@ -281,6 +283,6 @@ async def test_detect_labels_unexpected_exception() -> None:
         mock_client.return_value.__aenter__.return_value = mock_rekognition
 
         with pytest.raises(ErrRekognitionFailed) as exc_info:
-            await client.detect_labels(b"fake_image_data", 10, 75.0)
+            await service.detect_labels(b"fake_image_data", 10, 75.0)
 
         assert "Unexpected error in DetectLabels" in str(exc_info.value)
