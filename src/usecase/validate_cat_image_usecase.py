@@ -32,6 +32,24 @@ class ValidateCatImageUseCase:
         self.policy = policy
 
     async def execute(self, image_url: str) -> CatImageValidationResult:
+        """
+        猫画像のバリデーションを実行する。
+
+        Args:
+            image_url: 検証対象の画像URL
+
+        Returns:
+            CatImageValidationResult: バリデーション結果
+
+        Raises:
+            ErrRekognitionFailed: Rekognitionサービスの障害時に発生。
+                インフラ層の障害を示すため意図的にキャッチせず伝播させ、
+                Controller層で500エラーに変換される。
+
+        Note:
+            画像取得エラーやバリデーション失敗（クライアント起因）は
+            例外をキャッチしてis_acceptable=Falseのレスポンスに変換する。
+        """
         try:
             fetched_image = await self.image_fetch_repository.fetch_image(image_url)
             image_bytes = fetched_image["data"]
