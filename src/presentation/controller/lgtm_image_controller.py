@@ -14,6 +14,7 @@ from domain.lgtm_image_errors import (
     ErrInvalidSearchQuery,
     ErrInvalidUrl,
     ErrRecordCount,
+    ErrRekognitionFailed,
     ErrUrlNotAccessible,
 )
 from domain.repository.lgtm_image_repository_interface import (
@@ -22,12 +23,14 @@ from domain.repository.lgtm_image_repository_interface import (
 from log.logger import get_logger
 from log.url_sanitizer import sanitize_url_for_logging
 from presentation.controller.lgtm_image_request import (
+    CatImageValidationRequest,
     LgtmImageCreateFromUrlRequest,
     LgtmImageCreateRequest,
     LgtmImageSearchByImageFromUrlRequest,
     LgtmImageSearchByImageRequest,
 )
 from presentation.controller.lgtm_image_response import (
+    CatImageValidationResponse,
     LgtmImageCreateResponse,
     LgtmImageItem,
     LgtmImageRandomListResponse,
@@ -55,8 +58,11 @@ from usecase.search_lgtm_images_by_image_from_url_usecase import (
     SearchLgtmImagesByImageFromUrlUsecase,
 )
 from usecase.search_lgtm_images_by_text import SearchLgtmImagesByTextUsecase
+from usecase.validate_cat_image_usecase import ValidateCatImageUseCase
 
 if TYPE_CHECKING:
+    from domain.cat_image_validation_policy import CatImageValidationPolicy
+    from domain.image_analysis_interface import ImageAnalysisServiceInterface
     from domain.repository.image_fetch_repository_interface import (
         ImageFetchRepositoryInterface,
     )
@@ -329,3 +335,62 @@ class LgtmImageController:
         except Exception as e:
             logger.error(f"Error searching LGTM images by image from URL: {e}")
             return create_error_response(e)
+
+    @staticmethod
+    async def validate_cat_image(
+        request: CatImageValidationRequest,
+        image_analysis_service: "ImageAnalysisServiceInterface",
+        image_fetch_repository: "ImageFetchRepositoryInterface",
+        policy: "CatImageValidationPolicy",
+    ) -> JSONResponse:
+        sanitized_url = sanitize_url_for_logging(request.image_url)
+        logger.info(
+            "Validating cat image",
+            extra={"image_url": sanitized_url},
+        )
+
+        try:
+            usecase = ValidateCatImageUseCase(
+                image_analysis_service, image_fetch_repository, policy
+            )
+            result = await usecase.execute(request.image_url)
+
+            response = CatImageValidationResponse(
+                isAcceptableCatImage=result["is_acceptable"],
+                notAcceptableReason=result.get("reason"),
+            )
+
+            return create_json_response(response)
+
+        except ErrInvalidUrl as e:
+            logger.error(f"Invalid URL provided: {e}")
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Invalid URL provided"},
+            )
+        except ErrUrlNotAccessible as e:
+            logger.error(f"URL not accessible: {e}")
+            return JSONResponse(
+                status_code=400,
+                content={"error": "URL not accessible"},
+            )
+        except ErrImageFetchFailed as e:
+            logger.error(f"Failed to fetch image: {e}")
+            return JSONResponse(
+                status_code=422,
+                content={"error": "Failed to fetch image from URL"},
+            )
+        except ErrInvalidImageExtension as e:
+            logger.error(f"Invalid image extension: {e}")
+            return JSONResponse(
+                status_code=422,
+                content={"error": "Invalid image extension or unsupported format"},
+            )
+        except ErrRekognitionFailed as e:
+            logger.error(f"Rekognition API error: {e}")
+            return JSONResponse(
+                status_code=500, content={"error": "Image validation failed"}
+            )
+        except Exception as e:
+            logger.error(f"Unexpected error in validate_cat_image: {e}")
+            return JSONResponse(status_code=500, content={"error": str(e)})

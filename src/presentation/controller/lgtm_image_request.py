@@ -123,3 +123,30 @@ class LgtmImageSearchByImageFromUrlRequest(BaseModel):
             raise ValueError("image_url must have a valid hostname")
 
         return v
+
+
+class CatImageValidationRequest(BaseModel):
+    image_url: str = Field(
+        ...,
+        alias="imageUrl",
+        description=("画像のURL(httpsのみ許可)。"),
+        examples=[
+            "https://allowed-bucket.r2.cloudflarestorage.com/image.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256",
+        ],
+        min_length=1,
+    )
+
+    @field_validator("image_url")
+    @classmethod
+    def validate_image_url(cls, v: str) -> str:
+        parsed = urlparse(v)
+
+        # httpsのみ許可
+        if parsed.scheme != "https":
+            raise ValueError("image_url must be https URL")
+
+        # ホスト名が存在することを確認
+        if not parsed.netloc:
+            raise ValueError("image_url must have a valid hostname")
+
+        return v
