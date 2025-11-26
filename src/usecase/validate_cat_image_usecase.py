@@ -6,9 +6,6 @@ from domain.repository.image_fetch_repository_interface import (
     ImageFetchRepositoryInterface,
 )
 from domain.lgtm_image_errors import (
-    ErrInvalidUrl,
-    ErrUrlNotAccessible,
-    ErrImageFetchFailed,
     ErrNotModerationImage,
     ErrPersonFaceInImage,
     ErrNotCatImage,
@@ -42,18 +39,23 @@ class ValidateCatImageUseCase:
             CatImageValidationResult: バリデーション結果
 
         Raises:
+            ErrInvalidUrl: URLが無効な形式の場合。Controller層で400エラーに変換される。
+            ErrUrlNotAccessible: URLにアクセスできない場合。Controller層で400エラーに変換される。
+            ErrImageFetchFailed: 画像の取得に失敗した場合。Controller層で422エラーに変換される。
             ErrRekognitionFailed: Rekognitionサービスの障害時に発生。
                 インフラ層の障害を示すため意図的にキャッチせず伝播させ、
                 Controller層で500エラーに変換される。
 
         Note:
-            画像取得エラーやバリデーション失敗（クライアント起因）は
+            バリデーション判定結果（猫未検出、不適切コンテンツ、人の顔検出）は
             例外をキャッチしてis_acceptable=Falseのレスポンスに変換する。
         """
-        try:
-            fetched_image = await self.image_fetch_repository.fetch_image(image_url)
-            image_bytes = fetched_image["data"]
+        # 画像取得エラーはキャッチせずControllerに伝播
+        fetched_image = await self.image_fetch_repository.fetch_image(image_url)
+        image_bytes = fetched_image["data"]
 
+        # ビジネスロジックの判定エラーのみキャッチ
+        try:
             await self._validate_moderation(image_bytes)
 
             await self._validate_no_person_face(image_bytes)
@@ -62,10 +64,6 @@ class ValidateCatImageUseCase:
 
             return CatImageValidationResult(is_acceptable=True)
 
-        except (ErrInvalidUrl, ErrUrlNotAccessible, ErrImageFetchFailed):
-            return CatImageValidationResult(
-                is_acceptable=False, reason="image fetch failed"
-            )
         except ErrNotModerationImage:
             return CatImageValidationResult(
                 is_acceptable=False, reason="not moderation image"

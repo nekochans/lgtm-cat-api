@@ -122,7 +122,7 @@ async def test_execute_moderation_content_detected() -> None:
 
 @pytest.mark.asyncio
 async def test_execute_image_fetch_failed() -> None:
-    """画像取得失敗のテスト"""
+    """画像取得失敗時は例外が伝播することをテスト"""
     mock_image_analysis_service = AsyncMock()
     mock_image_fetch_repo = AsyncMock()
     mock_image_fetch_repo.fetch_image = AsyncMock(
@@ -132,10 +132,10 @@ async def test_execute_image_fetch_failed() -> None:
     usecase = ValidateCatImageUseCase(
         mock_image_analysis_service, mock_image_fetch_repo, DEFAULT_VALIDATION_POLICY
     )
-    result = await usecase.execute("https://example.com/invalid.jpg")
 
-    assert result["is_acceptable"] is False
-    assert result["reason"] == "image fetch failed"
+    # 画像取得エラーはUseCaseでキャッチせずController層に伝播する
+    with pytest.raises(ErrImageFetchFailed):
+        await usecase.execute("https://example.com/invalid.jpg")
 
 
 @pytest.mark.asyncio
