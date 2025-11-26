@@ -140,3 +140,14 @@ def get_max_image_size() -> int:
 
 def get_image_allowed_domain() -> str:
     return IMAGE_ALLOWED_DOMAIN
+
+
+# AWS Rekognition設定
+AWS_REKOGNITION_REGION: Final[str] = os.getenv(
+    "AWS_REKOGNITION_REGION", "ap-northeast-1"
+)
+
+
+def get_aws_rekognition_region() -> str:
+    """AWS Rekognitionのリージョンを取得"""
+    return AWS_REKOGNITION_REGION

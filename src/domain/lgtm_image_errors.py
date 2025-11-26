@@ -45,3 +45,19 @@ class ErrVectorSearchFailed(Exception):
 
 class ErrInvalidSearchQuery(Exception):
     pass
+
+
+class ErrRekognitionFailed(Exception):
+    pass
+
+
+class ErrNotModerationImage(Exception):
+    pass
+
+
+class ErrPersonFaceInImage(Exception):
+    pass
+
+
+class ErrNotCatImage(Exception):
+    pass
