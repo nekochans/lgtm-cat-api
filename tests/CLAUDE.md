@@ -209,3 +209,63 @@ async def insert_test_lgtm_images(
 
     return images
 ```
+
+## コントローラー層テストの方針
+
+コントローラー層のテストでは、依存先に応じて「実DB使用」と「モック使用」を使い分けます。
+
+### 使い分け基準
+
+| 依存先 | テスト方針 | 理由 |
+|--------|-----------|------|
+| 内部DBのみ | 実DB使用（`test_db_session`） | 実際のクエリ・トランザクション動作を検証できる |
+| 外部サービス | モック使用（`AsyncMock`等） | 外部依存を排除し、テストの安定性を確保 |
+
+### 外部サービスの例
+
+- オブジェクトストレージ（S3等）
+- ベクトル検索サービス
+- AI画像分析サービス（Rekognition等）
+- 外部API
+
+### 実DB使用のメリット
+
+- 実際のSQLクエリが正しく動作するか検証できる
+- ORMマッピング（モデル ↔ DB）が正しいか検証できる
+- トランザクション処理が期待通りに動作するか検証できる
+- データベース制約（外部キー、ユニーク制約等）の動作を検証できる
+
+### モック使用のメリット
+
+- 外部サービスの状態に左右されず、テストが安定する
+- テスト実行が高速
+- 外部サービスの障害やレート制限の影響を受けない
+
+### 具体的な適用例
+
+**実DB使用**:
+- `exec()` - 内部DBから画像一覧を取得
+- `exec_recently_created()` - 内部DBから最近作成された画像を取得
+
+**モック使用**:
+- `create()` - オブジェクトストレージへのアップロード
+- `create_from_url()` - 外部URL取得 + ストレージアップロード
+- `search_by_text()` - ベクトル検索サービス
+- `search_by_image()` - ベクトル検索サービス
+- `search_by_image_from_url()` - 外部URL取得 + ベクトル検索
+- `validate_cat_image()` - AI画像分析サービス
+
+### モックのパターン
+
+モック使用テストでは、UseCaseクラスをpatchしてexecuteメソッドをモックします。
+これにより、Controller層のみをテストし、UseCase内部ロジックの検証はUseCaseテストに委譲します。
+
+```python
+@patch("presentation.controller.lgtm_image_controller.UseCaseClass")
+async def test_method(self, mock_usecase_class: Mock) -> None:
+    mock_usecase_class.execute = AsyncMock(return_value={"key": "value"})
+
+    result = await Controller.method(...)
+
+    mock_usecase_class.execute.assert_called_once()
+```
