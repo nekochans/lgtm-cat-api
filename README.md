@@ -197,6 +197,8 @@ APIはシンプルなRESTパターンに従い、3つのエンドポイントを
 4. **POST /lgtm-images/search/text** - テキストからLGTM画像を検索
 5. **POST /lgtm-images/search/image-from-data** - 画像データから類似したLGTM画像を検索
 6. **POST /lgtm-images/search/image-from-url** - 署名付きURLから類似したLGTM画像を検索
+7. **POST /cat-images/validate/url** - URLから画像を取得して猫画像判定
+8. **POST /cat-images/validate/s3** - S3オブジェクト参照で猫画像判定
 
 レスポンスモデルはPydanticのBaseModelを使用して定義されており、JSONフィールドにはキャメルケースを使用します（例: `imageUrl`, `imageExtension`）。
 
