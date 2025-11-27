@@ -50,51 +50,40 @@ app = FastAPI(title="LGTM Cat API")
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> Response:
-    """バリデーション例外ハンドラ - X-Request-Idヘッダーを追加"""
-    response = JSONResponse(
+    """バリデーション例外ハンドラ"""
+    return JSONResponse(
         status_code=422,
         content={"detail": exc.errors()},
     )
-    request_id = get_request_id()
-    if request_id:
-        response.headers["X-Request-Id"] = request_id
-    return response
 
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: Exception) -> Response:
-    """HTTP例外ハンドラ - X-Request-Idヘッダーを追加"""
+    """HTTP例外ハンドラ"""
     # 型アサーション: add_exception_handlerで登録した型が渡される
     http_exc = (
         exc
         if isinstance(exc, StarletteHTTPException)
         else StarletteHTTPException(status_code=500)
     )
-    response = JSONResponse(
+    return JSONResponse(
         status_code=http_exc.status_code,
         content={"detail": http_exc.detail},
     )
-    request_id = get_request_id()
-    if request_id:
-        response.headers["X-Request-Id"] = request_id
-    return response
 
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception) -> Response:
-    """一般例外ハンドラ - X-Request-Idヘッダーを追加"""
+    """一般例外ハンドラ"""
     # Sentryに例外を送信
     request_id = get_request_id()
     extra_context = {"request_id": request_id} if request_id else None
     capture_exception(exc, extra=extra_context)
 
-    response = JSONResponse(
+    return JSONResponse(
         status_code=500,
         content={"detail": "Internal Server Error"},
     )
-    if request_id:
-        response.headers["X-Request-Id"] = request_id
-    return response
 
 
 # ミドルウェアの登録（後に登録したものが先に実行される）
