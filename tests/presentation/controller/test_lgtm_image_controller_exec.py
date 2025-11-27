@@ -65,34 +65,37 @@ class TestLgtmImageControllerExec:
             assert item["url"].endswith(".webp")
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "base_url",
+        [
+            "example.com",
+            "cdn.example.com",
+            "storage.example.com",
+        ],
+        ids=["simple_domain", "cdn_subdomain", "storage_subdomain"],
+    )
     async def test_exec_with_different_base_urls(
-        self, test_db_session: AsyncSession
+        self, test_db_session: AsyncSession, base_url: str
     ) -> None:
         """正常系: 異なるbase_urlで正しく動作する."""
         # Arrange - DBに20件のテストデータを挿入
         await insert_test_lgtm_images(test_db_session, count=20)
 
         repository = LgtmImageRepository(test_db_session)
-        base_urls = [
-            "example.com",
-            "cdn.example.com",
-            "storage.example.com",
-        ]
 
-        for base_url in base_urls:
-            # Act
-            result = await LgtmImageController.exec(
-                repository=repository,
-                base_url=base_url,
-            )
+        # Act
+        result = await LgtmImageController.exec(
+            repository=repository,
+            base_url=base_url,
+        )
 
-            # Assert
-            assert isinstance(result, JSONResponse)
-            content = json.loads(bytes(result.body))
-            assert "lgtmImages" in content
-            assert len(content["lgtmImages"]) > 0
-            for item in content["lgtmImages"]:
-                assert item["url"].startswith(f"https://{base_url}")
+        # Assert
+        assert isinstance(result, JSONResponse)
+        content = json.loads(bytes(result.body))
+        assert "lgtmImages" in content
+        assert len(content["lgtmImages"]) > 0
+        for item in content["lgtmImages"]:
+            assert item["url"].startswith(f"https://{base_url}")
 
     @pytest.mark.asyncio
     async def test_exec_raises_error_when_insufficient_records(
@@ -219,34 +222,37 @@ class TestLgtmImageControllerExecRecentlyCreated:
             assert item["url"].endswith(".webp")
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "base_url",
+        [
+            "example.com",
+            "cdn.example.com",
+            "storage.example.com",
+        ],
+        ids=["simple_domain", "cdn_subdomain", "storage_subdomain"],
+    )
     async def test_exec_recently_created_with_different_base_urls(
-        self, test_db_session: AsyncSession
+        self, test_db_session: AsyncSession, base_url: str
     ) -> None:
         """正常系: 異なるbase_urlで正しく動作する."""
         # Arrange - DBに20件のテストデータを挿入
         await insert_test_lgtm_images(test_db_session, count=20)
 
         repository = LgtmImageRepository(test_db_session)
-        base_urls = [
-            "example.com",
-            "cdn.example.com",
-            "storage.example.com",
-        ]
 
-        for base_url in base_urls:
-            # Act
-            result = await LgtmImageController.exec_recently_created(
-                repository=repository,
-                base_url=base_url,
-            )
+        # Act
+        result = await LgtmImageController.exec_recently_created(
+            repository=repository,
+            base_url=base_url,
+        )
 
-            # Assert
-            assert isinstance(result, JSONResponse)
-            content = json.loads(bytes(result.body))
-            assert "lgtmImages" in content
-            assert len(content["lgtmImages"]) > 0
-            for item in content["lgtmImages"]:
-                assert item["url"].startswith(f"https://{base_url}")
+        # Assert
+        assert isinstance(result, JSONResponse)
+        content = json.loads(bytes(result.body))
+        assert "lgtmImages" in content
+        assert len(content["lgtmImages"]) > 0
+        for item in content["lgtmImages"]:
+            assert item["url"].startswith(f"https://{base_url}")
 
     @pytest.mark.asyncio
     async def test_exec_recently_created_raises_error_when_insufficient_records(
