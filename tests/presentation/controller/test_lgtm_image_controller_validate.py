@@ -7,6 +7,13 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 from domain.cat_image_validation_policy import CatImageValidationPolicy
+from domain.lgtm_image_errors import (
+    ErrImageFetchFailed,
+    ErrInvalidImageExtension,
+    ErrInvalidUrl,
+    ErrRekognitionFailed,
+    ErrUrlNotAccessible,
+)
 from presentation.controller.lgtm_image_controller import LgtmImageController
 from presentation.controller.lgtm_image_request import CatImageValidationRequest
 
@@ -80,8 +87,6 @@ class TestLgtmImageControllerValidateCatImage:
     ) -> None:
         """例外系: ErrInvalidUrlが発生した場合、400を返す."""
         # Arrange
-        from domain.lgtm_image_errors import ErrInvalidUrl
-
         mock_usecase_instance = AsyncMock()
         mock_usecase_instance.execute = AsyncMock(
             side_effect=ErrInvalidUrl("Invalid URL")
@@ -110,8 +115,6 @@ class TestLgtmImageControllerValidateCatImage:
     ) -> None:
         """例外系: ErrUrlNotAccessibleが発生した場合、400を返す."""
         # Arrange
-        from domain.lgtm_image_errors import ErrUrlNotAccessible
-
         mock_usecase_instance = AsyncMock()
         mock_usecase_instance.execute = AsyncMock(
             side_effect=ErrUrlNotAccessible("URL not accessible")
@@ -140,8 +143,6 @@ class TestLgtmImageControllerValidateCatImage:
     ) -> None:
         """例外系: ErrImageFetchFailedが発生した場合、422を返す."""
         # Arrange
-        from domain.lgtm_image_errors import ErrImageFetchFailed
-
         mock_usecase_instance = AsyncMock()
         mock_usecase_instance.execute = AsyncMock(
             side_effect=ErrImageFetchFailed("Fetch failed")
@@ -170,8 +171,6 @@ class TestLgtmImageControllerValidateCatImage:
     ) -> None:
         """例外系: ErrInvalidImageExtensionが発生した場合、422を返す."""
         # Arrange
-        from domain.lgtm_image_errors import ErrInvalidImageExtension
-
         mock_usecase_instance = AsyncMock()
         mock_usecase_instance.execute = AsyncMock(
             side_effect=ErrInvalidImageExtension("Invalid extension")
@@ -200,8 +199,6 @@ class TestLgtmImageControllerValidateCatImage:
     ) -> None:
         """例外系: ErrRekognitionFailedが発生した場合、500を返す."""
         # Arrange
-        from domain.lgtm_image_errors import ErrRekognitionFailed
-
         mock_usecase_instance = AsyncMock()
         mock_usecase_instance.execute = AsyncMock(
             side_effect=ErrRekognitionFailed("Rekognition API error")
