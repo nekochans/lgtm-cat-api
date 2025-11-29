@@ -27,3 +27,15 @@ class ImageAnalysisServiceInterface(Protocol):
     async def detect_labels(
         self, image_bytes: bytes, max_labels: int, min_confidence: float
     ) -> list[LabelDetection]: ...
+
+    async def detect_moderation_labels_from_s3(
+        self, bucket: str, key: str, min_confidence: float
+    ) -> list[ModerationLabelDetection]: ...
+
+    async def detect_faces_from_s3(
+        self, bucket: str, key: str
+    ) -> list[FaceDetection]: ...
+
+    async def detect_labels_from_s3(
+        self, bucket: str, key: str, max_labels: int, min_confidence: float
+    ) -> list[LabelDetection]: ...

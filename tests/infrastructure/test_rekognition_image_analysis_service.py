@@ -286,3 +286,289 @@ async def test_detect_labels_unexpected_exception() -> None:
             await service.detect_labels(b"fake_image_data", 10, 75.0)
 
         assert "Unexpected error in DetectLabels" in str(exc_info.value)
+
+
+# S3参照版のテスト
+
+
+@pytest.mark.asyncio
+async def test_detect_moderation_labels_from_s3_success() -> None:
+    """DetectModerationLabels（S3参照版）成功時のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        mock_rekognition.detect_moderation_labels = AsyncMock(
+            return_value={"ModerationLabels": []}
+        )
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        result = await service.detect_moderation_labels_from_s3(
+            "test-bucket", "test-key.jpg", 40.0
+        )
+
+        assert result == []
+        mock_rekognition.detect_moderation_labels.assert_called_once_with(
+            Image={"S3Object": {"Bucket": "test-bucket", "Name": "test-key.jpg"}},
+            MinConfidence=40.0,
+        )
+
+
+@pytest.mark.asyncio
+async def test_detect_moderation_labels_from_s3_with_labels() -> None:
+    """DetectModerationLabels（S3参照版）: ラベルが検出された場合のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    aws_response_labels = [
+        {"Name": "Violence", "Confidence": 85.5},
+        {"Name": "Suggestive", "Confidence": 60.2},
+    ]
+
+    expected_labels = [
+        ModerationLabelDetection(name="Violence", confidence=85.5),
+        ModerationLabelDetection(name="Suggestive", confidence=60.2),
+    ]
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        mock_rekognition.detect_moderation_labels = AsyncMock(
+            return_value={"ModerationLabels": aws_response_labels}
+        )
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        result = await service.detect_moderation_labels_from_s3(
+            "test-bucket", "test-key.jpg", 50.0
+        )
+
+        assert result == expected_labels
+        mock_rekognition.detect_moderation_labels.assert_called_once_with(
+            Image={"S3Object": {"Bucket": "test-bucket", "Name": "test-key.jpg"}},
+            MinConfidence=50.0,
+        )
+
+
+@pytest.mark.asyncio
+async def test_detect_moderation_labels_from_s3_failure() -> None:
+    """DetectModerationLabels（S3参照版）失敗時のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        error_response = {
+            "Error": {"Code": "InvalidParameterException", "Message": "API Error"}
+        }
+        mock_rekognition.detect_moderation_labels = AsyncMock(
+            side_effect=ClientError(error_response, "DetectModerationLabels")  # type: ignore[arg-type]
+        )
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        with pytest.raises(ErrRekognitionFailed) as exc_info:
+            await service.detect_moderation_labels_from_s3(
+                "test-bucket", "test-key.jpg", 40.0
+            )
+
+        assert "DetectModerationLabels from S3 failed" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_detect_moderation_labels_from_s3_unexpected_exception() -> None:
+    """DetectModerationLabels（S3参照版）予期しない例外のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        mock_rekognition.detect_moderation_labels = AsyncMock(
+            side_effect=RuntimeError("Unexpected runtime error")
+        )
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        with pytest.raises(ErrRekognitionFailed) as exc_info:
+            await service.detect_moderation_labels_from_s3(
+                "test-bucket", "test-key.jpg", 40.0
+            )
+
+        assert "Unexpected error in DetectModerationLabels from S3" in str(
+            exc_info.value
+        )
+
+
+@pytest.mark.asyncio
+async def test_detect_faces_from_s3_success() -> None:
+    """DetectFaces（S3参照版）成功時のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        mock_rekognition.detect_faces = AsyncMock(return_value={"FaceDetails": []})
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        result = await service.detect_faces_from_s3("test-bucket", "test-key.jpg")
+
+        assert result == []
+        mock_rekognition.detect_faces.assert_called_once_with(
+            Image={"S3Object": {"Bucket": "test-bucket", "Name": "test-key.jpg"}}
+        )
+
+
+@pytest.mark.asyncio
+async def test_detect_faces_from_s3_with_faces() -> None:
+    """DetectFaces（S3参照版）: 顔が検出された場合のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    aws_faces = [
+        {"Confidence": 99.5, "BoundingBox": {}},
+        {"Confidence": 98.2, "BoundingBox": {}},
+    ]
+
+    expected_result: list[FaceDetection] = [
+        FaceDetection(confidence=99.5),
+        FaceDetection(confidence=98.2),
+    ]
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        mock_rekognition.detect_faces = AsyncMock(
+            return_value={"FaceDetails": aws_faces}
+        )
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        result = await service.detect_faces_from_s3("test-bucket", "test-key.jpg")
+
+        assert result == expected_result
+        mock_rekognition.detect_faces.assert_awaited_once_with(
+            Image={"S3Object": {"Bucket": "test-bucket", "Name": "test-key.jpg"}}
+        )
+
+
+@pytest.mark.asyncio
+async def test_detect_faces_from_s3_failure() -> None:
+    """DetectFaces（S3参照版）失敗時のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        error_response = {
+            "Error": {"Code": "InvalidParameterException", "Message": "API Error"}
+        }
+        mock_rekognition.detect_faces = AsyncMock(
+            side_effect=ClientError(error_response, "DetectFaces")  # type: ignore[arg-type]
+        )
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        with pytest.raises(ErrRekognitionFailed) as exc_info:
+            await service.detect_faces_from_s3("test-bucket", "test-key.jpg")
+
+        assert "DetectFaces from S3 failed" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_detect_faces_from_s3_unexpected_exception() -> None:
+    """DetectFaces（S3参照版）予期しない例外のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        mock_rekognition.detect_faces = AsyncMock(
+            side_effect=ValueError("Unexpected value error")
+        )
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        with pytest.raises(ErrRekognitionFailed) as exc_info:
+            await service.detect_faces_from_s3("test-bucket", "test-key.jpg")
+
+        assert "Unexpected error in DetectFaces from S3" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_detect_labels_from_s3_success() -> None:
+    """DetectLabels（S3参照版）成功時のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        mock_rekognition.detect_labels = AsyncMock(return_value={"Labels": []})
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        result = await service.detect_labels_from_s3(
+            "test-bucket", "test-key.jpg", 10, 75.0
+        )
+
+        assert result == []
+        mock_rekognition.detect_labels.assert_called_once_with(
+            Image={"S3Object": {"Bucket": "test-bucket", "Name": "test-key.jpg"}},
+            MaxLabels=10,
+            MinConfidence=75.0,
+        )
+
+
+@pytest.mark.asyncio
+async def test_detect_labels_from_s3_with_cat() -> None:
+    """DetectLabels（S3参照版）: 猫ラベルが検出された場合のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    aws_labels = [
+        {"Name": "Cat", "Confidence": 95.8},
+        {"Name": "Animal", "Confidence": 92.3},
+        {"Name": "Pet", "Confidence": 90.1},
+    ]
+
+    expected_result: list[LabelDetection] = [
+        LabelDetection(name="Cat", confidence=95.8),
+        LabelDetection(name="Animal", confidence=92.3),
+        LabelDetection(name="Pet", confidence=90.1),
+    ]
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        mock_rekognition.detect_labels = AsyncMock(return_value={"Labels": aws_labels})
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        result = await service.detect_labels_from_s3(
+            "test-bucket", "test-key.jpg", 5, 80.0
+        )
+
+        assert result == expected_result
+        mock_rekognition.detect_labels.assert_called_once_with(
+            Image={"S3Object": {"Bucket": "test-bucket", "Name": "test-key.jpg"}},
+            MaxLabels=5,
+            MinConfidence=80.0,
+        )
+
+
+@pytest.mark.asyncio
+async def test_detect_labels_from_s3_failure() -> None:
+    """DetectLabels（S3参照版）失敗時のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        error_response = {
+            "Error": {"Code": "InvalidParameterException", "Message": "API Error"}
+        }
+        mock_rekognition.detect_labels = AsyncMock(
+            side_effect=ClientError(error_response, "DetectLabels")  # type: ignore[arg-type]
+        )
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        with pytest.raises(ErrRekognitionFailed) as exc_info:
+            await service.detect_labels_from_s3("test-bucket", "test-key.jpg", 10, 75.0)
+
+        assert "DetectLabels from S3 failed" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_detect_labels_from_s3_unexpected_exception() -> None:
+    """DetectLabels（S3参照版）予期しない例外のテスト"""
+    service = RekognitionImageAnalysisService(region="ap-northeast-1")
+
+    with patch.object(service.session, "client") as mock_client:
+        mock_rekognition = AsyncMock()
+        mock_rekognition.detect_labels = AsyncMock(
+            side_effect=TypeError("Unexpected type error")
+        )
+        mock_client.return_value.__aenter__.return_value = mock_rekognition
+
+        with pytest.raises(ErrRekognitionFailed) as exc_info:
+            await service.detect_labels_from_s3("test-bucket", "test-key.jpg", 10, 75.0)
+
+        assert "Unexpected error in DetectLabels from S3" in str(exc_info.value)
