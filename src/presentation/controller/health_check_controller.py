@@ -6,11 +6,13 @@ from presentation.controller.response_helper import create_json_response
 
 
 class HealthCheckResponse(BaseModel):
-    status_code: int = Field(..., alias="statusCode", description="ステータスコード")
+    status_code: int = Field(
+        ..., serialization_alias="statusCode", description="ステータスコード"
+    )
 
 
 class HealthCheckController:
     @staticmethod
     def check() -> JSONResponse:
-        response = HealthCheckResponse(statusCode=200)
+        response = HealthCheckResponse(status_code=200)
         return create_json_response(response, status_code=200)
