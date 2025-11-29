@@ -19,7 +19,11 @@ from log.logger import setup_logging
 from log.request_id import get_request_id
 from presentation.middleware.logging_middleware import LoggingMiddleware
 from presentation.middleware.request_id_middleware import RequestIdMiddleware
-from presentation.router import lgtm_image_router, lgtm_image_v2_router
+from presentation.router import (
+    cat_image_router,
+    lgtm_image_router,
+    lgtm_image_v2_router,
+)
 
 # 必須の環境変数を検証（起動時にfail-fast）
 try:
@@ -91,6 +95,7 @@ app.add_middleware(LoggingMiddleware)
 app.add_middleware(RequestIdMiddleware)
 
 # ルーターの登録
+app.include_router(cat_image_router.router)
 app.include_router(lgtm_image_router.router)
 app.include_router(lgtm_image_v2_router.router)
 app.include_router(health_check_router.router)
