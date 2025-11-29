@@ -100,7 +100,8 @@
 
 #### レスポンスモデル（presentation層）
 - **Pydantic BaseModel**を使用してAPI応答モデルを定義
-- `Field(alias="...")` でキャメルケース化（Python側はスネークケース）
+- `Field(serialization_alias="...")` でキャメルケース化（Python側はスネークケース）
+  - 例: `lgtm_images: list[LgtmImageItem] = Field(..., serialization_alias="lgtmImages")`
 - OpenAPI仕様の自動生成に対応
 - 例: `LgtmImageItem(BaseModel)`, `LgtmImageRandomListResponse(BaseModel)`
 
