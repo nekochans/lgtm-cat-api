@@ -19,10 +19,12 @@ from log.logger import setup_logging
 from log.request_id import get_request_id
 from presentation.middleware.logging_middleware import LoggingMiddleware
 from presentation.middleware.request_id_middleware import RequestIdMiddleware
+from fastapi_mcp import FastApiMCP  # type: ignore[import-untyped]
 from presentation.router import (
     cat_image_router,
     lgtm_image_router,
     lgtm_image_v2_router,
+    mcp_lgtm_image_router,
 )
 
 # 必須の環境変数を検証（起動時にfail-fast）
@@ -99,6 +101,12 @@ app.include_router(cat_image_router.router)
 app.include_router(lgtm_image_router.router)
 app.include_router(lgtm_image_v2_router.router)
 app.include_router(health_check_router.router)
+app.include_router(mcp_lgtm_image_router.router)
+
+# MCP Serverの設定
+# tags=["mcp_tool"]を持つエンドポイントのみをMCPツールとして公開
+mcp = FastApiMCP(app, include_tags=["mcp_tool"])
+mcp.mount()
 
 
 def start() -> None:
