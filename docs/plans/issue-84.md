@@ -168,3 +168,12 @@ class TestMcpLgtmImageRouterRandomImages:
 - **品質チェック**
   - `make lint`, `make typecheck`, `make test`をすべて通過させる
   - 型アノテーションを正しく記述する
+
+- **ミドルウェアの互換性問題**
+  - fastapi-mcpのSSEエンドポイント（`/sse`）で「Unexpected ASGI message 'http.response.body'」エラーが発生
+  - これは [tadata-org/fastapi_mcp#171](https://github.com/tadata-org/fastapi_mcp/issues/171) と同様の問題
+  - **原因**: StarletteのBaseHTTPMiddlewareがSSEストリーミングと互換性がない
+  - **対応**: LoggingMiddlewareとRequestIdMiddlewareを純粋なASGIミドルウェアとして再実装
+  - **SSEエンドポイントのスキップ処理**:
+    - LoggingMiddleware: SSEは長時間接続のため、通常のHTTPリクエストとログ出力の性質が異なる（処理時間が数分〜数時間になる）ためスキップ
+    - RequestIdMiddleware: LoggingMiddlewareでログを出力しないため、リクエストIDを生成・設定する意味がないのでスキップ
