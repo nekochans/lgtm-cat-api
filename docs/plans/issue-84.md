@@ -177,3 +177,29 @@ class TestMcpLgtmImageRouterRandomImages:
   - **SSEエンドポイントのスキップ処理**:
     - LoggingMiddleware: SSEは長時間接続のため、通常のHTTPリクエストとログ出力の性質が異なる（処理時間が数分〜数時間になる）ためスキップ
     - RequestIdMiddleware: LoggingMiddlewareでログを出力しないため、リクエストIDを生成・設定する意味がないのでスキップ
+
+### MCPツール名の命名規則
+
+MCPツールの`operation_id`は以下のように命名した：
+
+| operation_id | 説明 |
+|--------------|------|
+| `get_random_lgtm_images` | ランダムなLGTM画像を取得 |
+| `get_recently_created_lgtm_images` | 最近作成されたLGTM画像を取得 |
+
+**`get_`プレフィックスを採用した理由:**
+
+1. **MCPサーバーの標準的な命名慣例に準拠**
+   - Anthropic公式のGitHub MCPサーバーでは`get_issue`, `get_commit`, `get_file_contents`など`get_`プレフィックスが標準的に使用されている
+   - 他の主要MCPサーバー（Serena, Context7等）も同様に`get_`を採用
+
+2. **CRUDパターンとの親和性**
+   - `get`/`list`/`create`/`update`/`delete`の標準動詞パターンに沿っている
+   - 読み取り専用操作に対して`get`は直感的
+
+3. **HTTPメソッドとの整合性**
+   - これらは`GET`リクエストのエンドポイントであり、`get_`プレフィックスはHTTPセマンティクスと一致
+
+**検討した代替案:**
+- `fetch_random_lgtm_images` - 外部APIからの取得を強調するが、MCPの慣例から外れる
+- `list_random_lgtm_images` - コレクションを返すことを強調するが、「ランダム」という性質を考慮すると`get`の方が適切
