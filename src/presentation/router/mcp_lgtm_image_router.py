@@ -29,15 +29,15 @@ def create_lgtm_image_repository(
 
 @router.get(
     "/lgtm-images",
-    summary="ランダムなLGTM画像を取得（MCP用）",
-    description="ランダムに選択されたLGTM画像のリストを返します。認証不要。",
-    response_description="ランダムに選択されたLGTM画像のリスト",
+    summary="Get random LGTM images",
+    description="Returns a list of randomly selected LGTM (Looks Good To Me) cat images for use in code review comments and pull request approvals.",
+    response_description="A list of randomly selected LGTM images",
     response_model=LgtmImageRandomListResponse,
     tags=["mcp_tool"],
     operation_id="get_random_lgtm_images",
     responses={
         200: {
-            "description": "成功時のレスポンス",
+            "description": "Success Response",
             "content": {
                 "application/json": {
                     "example": {
@@ -56,7 +56,7 @@ def create_lgtm_image_repository(
             },
         },
         404: {
-            "description": "LGTM画像が見つからない",
+            "description": "No LGTM images found",
             "content": {
                 "application/json": {
                     "example": {"error": "Insufficient LGTM images available"}
@@ -64,7 +64,7 @@ def create_lgtm_image_repository(
             },
         },
         500: {
-            "description": "サーバーエラー",
+            "description": "Internal server error",
             "content": {
                 "application/json": {"example": {"error": "Internal server error"}}
             },
@@ -82,15 +82,15 @@ async def extract_random_lgtm_images(
 
 @router.get(
     "/lgtm-images/recently-created",
-    summary="最近作成されたLGTM画像を取得（MCP用）",
-    description="最近作成されたLGTM画像のリストを返します。認証不要。",
-    response_description="最近作成されたLGTM画像のリスト",
+    summary="Get recently created LGTM images",
+    description="Returns a list of the most recently created LGTM (Looks Good To Me) cat images for use in code review comments and pull request approvals.",
+    response_description="A list of recently created LGTM images",
     response_model=LgtmImageRecentlyCreatedListResponse,
     tags=["mcp_tool"],
     operation_id="get_recently_created_lgtm_images",
     responses={
         200: {
-            "description": "成功時のレスポンス",
+            "description": "Success Response",
             "content": {
                 "application/json": {
                     "example": {
@@ -109,7 +109,7 @@ async def extract_random_lgtm_images(
             },
         },
         404: {
-            "description": "LGTM画像が見つからない",
+            "description": "No LGTM images found",
             "content": {
                 "application/json": {
                     "example": {"error": "Insufficient LGTM images available"}
@@ -117,7 +117,7 @@ async def extract_random_lgtm_images(
             },
         },
         500: {
-            "description": "サーバーエラー",
+            "description": "Internal server error",
             "content": {
                 "application/json": {"example": {"error": "Internal server error"}}
             },
