@@ -10,6 +10,7 @@ LGTMeow用のFastAPIベースのWeb APIです。
 ### Webフレームワーク
 - **FastAPI 0.121.0+** - 高速なPython Webフレームワーク
 - **Uvicorn 0.38.0+** - ASGIサーバー（開発サーバーとして使用）
+  - **fastapi-mcp 0.4.0+** - MCP (Model Context Protocol) サーバー機能
 
 ### 認証
 - **python-jose 3.5.0+** - JWT（JSON Web Token）の生成・検証
@@ -189,7 +190,7 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 
 ### エンドポイント
 
-**すべてのエンドポイントで認証が必須です。**
+#### 認証必須エンドポイント
 
 1. **GET /lgtm-images** - ランダムなLGTM画像を返す
 2. **POST /lgtm-images** - 新しいLGTM画像を作成（base64画像と拡張子を受け取る）
@@ -199,6 +200,13 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 6. **POST /lgtm-images/search/image-from-url** - 署名付きURLから類似したLGTM画像を検索
 7. **POST /cat-images/validate/url** - URLから画像を取得して猫画像判定
 8. **POST /cat-images/validate/s3** - S3オブジェクト参照で猫画像判定
+
+#### MCP経由で認証不要なエンドポイント
+
+以下のエンドポイントはMCP経由でアクセスする場合、認証なしで利用できます：
+
+1. **GET /lgtm-images** - ランダムなLGTM画像を返す
+2. **GET /lgtm-images/recently-created** - 最近作成されたLGTM画像を返す
 
 レスポンスモデルはPydanticのBaseModelを使用して定義されており、JSONフィールドにはキャメルケースを使用します（例: `imageUrl`, `imageExtension`）。
 
@@ -211,6 +219,48 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 - **トークン取得**: AWS Cognitoから発行されたアクセストークンを使用
 - **エラーレスポンス**:
   - 401 Unauthorized - トークンが無効、期限切れ、または未提供の場合
+
+### MCP Server
+
+本APIはMCP (Model Context Protocol) Serverとしても機能し、AIエージェントから直接利用できます。
+
+#### MCP経由で利用可能なエンドポイント
+
+以下のエンドポイントはMCP経由では**認証不要**で利用できます：
+
+- **GET /lgtm-images** - ランダムなLGTM画像を取得
+- **GET /lgtm-images/recently-created** - 最近作成されたLGTM画像を取得
+
+#### Claudeからの利用方法
+
+Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下を追加してください：
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "lgtmeow": {
+      "command": "/path/to/uvx",
+      "args": [
+        "mcp-proxy",
+        "http://localhost:8000/sse"
+      ]
+    }
+  }
+}
+```
+
+※ [uv](https://docs.astral.sh/uv/)のインストールが必要です。
+
+※ `command`には`uvx`のフルパスを指定してください。以下のコマンドで確認できます：
+
+```bash
+which uvx
+```
+
+設定後、Claudeを再起動し、`make run`でローカルサーバーを起動すると利用可能になります。
 
 ## プロジェクト構造
 
