@@ -232,11 +232,22 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 - **GET /mcp/lgtm-images** - ランダムなLGTM画像を取得
 - **GET /mcp/lgtm-images/recently-created** - 最近作成されたLGTM画像を取得
 
-#### Claudeからの利用方法
+#### 利用方法
 
-Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下を追加してください：
+まず、ローカルサーバーを起動します：
+
+```bash
+make run
+```
+
+MCPに対応したクライアントから接続できます。以下はClaudeでの設定例です。
+
+##### Claude Desktopの設定
+
+設定ファイル（`claude_desktop_config.json`）に以下を追加してください：
 
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
@@ -261,7 +272,24 @@ Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下�
 which uvx
 ```
 
-設定後、Claudeを再起動し、`make run`でローカルサーバーを起動すると利用可能になります。
+設定後、Claude Desktopを再起動すると利用可能になります。
+
+##### Claude Codeの設定
+
+プロジェクトルートに`.mcp.json`ファイルを作成し、以下を追加してください：
+
+```json
+{
+  "mcpServers": {
+    "lgtmeow": {
+      "type": "sse",
+      "url": "http://localhost:8000/sse"
+    }
+  }
+}
+```
+
+Claude Codeはプロキシを必要とせず、SSEエンドポイントに直接接続できます。Claude Codeを起動すると自動的にMCPサーバーが認識されます。
 
 ## プロジェクト構造
 

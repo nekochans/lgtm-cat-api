@@ -16,3 +16,6 @@ wheels/
 # Environment variables
 .env
 .envrc
+
+# MCP file
+.mcp.json
