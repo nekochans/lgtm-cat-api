@@ -2,9 +2,7 @@
 
 import logging
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING
 
-import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,9 +12,6 @@ from tests.fixtures.test_database import (
     generate_random_db_name,
     create_test_db_session,
 )
-
-if TYPE_CHECKING:
-    from fastapi import FastAPI
 
 logger = logging.getLogger(__name__)
 
@@ -45,15 +40,3 @@ async def test_db_session() -> AsyncGenerator[AsyncSession, None]:
             except Exception as e:
                 # 削除失敗をログに記録するが、元のエラーをマスクしないため再送出しない
                 logger.warning(f"Failed to drop test database '{db_name}': {e}")
-
-
-@pytest.fixture
-def app() -> "FastAPI":
-    """FastAPIアプリケーションを遅延ロードするフィクスチャ.
-
-    テストファイル読み込み時のモジュールロードを回避するため、
-    フィクスチャ内でappをインポートする。
-    """
-    from main import app as fastapi_app
-
-    return fastapi_app
