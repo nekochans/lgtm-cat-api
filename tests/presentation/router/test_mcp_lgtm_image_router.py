@@ -7,23 +7,29 @@ Routerの依存性注入（Depends）が正しく動作することを確認す�
 """
 
 from collections.abc import Generator
+from typing import TYPE_CHECKING
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config import get_lgtm_images_base_url
-from infrastructure.lgtm_image_repository import LgtmImageRepository
-from main import app
-from presentation.router.mcp_lgtm_image_router import create_lgtm_image_repository
 from tests.fixtures.test_data_helpers import insert_test_lgtm_images
+
+if TYPE_CHECKING:
+    from fastapi import FastAPI
 
 
 @pytest.fixture
 def override_dependencies(
+    app: "FastAPI",
     test_db_session: AsyncSession,
 ) -> Generator[None, None, None]:
     """依存性オーバーライドを設定するフィクスチャ."""
+    # テストファイル読み込み時のモジュールロードを回避するため、フィクスチャ内でインポート
+    from config import get_lgtm_images_base_url
+    from infrastructure.lgtm_image_repository import LgtmImageRepository
+    from presentation.router.mcp_lgtm_image_router import create_lgtm_image_repository
+
     test_base_url = "cdn.example.com"
 
     def _get_test_repository() -> LgtmImageRepository:
@@ -51,6 +57,7 @@ class TestMcpLgtmImageRouterRandomImages:
     @pytest.mark.asyncio
     async def test_get_random_lgtm_images_success(
         self,
+        app: "FastAPI",
         test_db_session: AsyncSession,
         override_dependencies: None,
     ) -> None:
@@ -86,6 +93,7 @@ class TestMcpLgtmImageRouterRandomImages:
     @pytest.mark.asyncio
     async def test_get_random_lgtm_images_returns_404_when_insufficient_records(
         self,
+        app: "FastAPI",
         test_db_session: AsyncSession,
         override_dependencies: None,
     ) -> None:
@@ -117,6 +125,7 @@ class TestMcpLgtmImageRouterRecentlyCreated:
     @pytest.mark.asyncio
     async def test_get_recently_created_lgtm_images_success(
         self,
+        app: "FastAPI",
         test_db_session: AsyncSession,
         override_dependencies: None,
     ) -> None:
@@ -152,6 +161,7 @@ class TestMcpLgtmImageRouterRecentlyCreated:
     @pytest.mark.asyncio
     async def test_get_recently_created_returns_404_when_insufficient_records(
         self,
+        app: "FastAPI",
         test_db_session: AsyncSession,
         override_dependencies: None,
     ) -> None:
