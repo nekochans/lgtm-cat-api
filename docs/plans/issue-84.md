@@ -153,6 +153,13 @@ class TestMcpLgtmImageRouterRandomImages:
 - **fastapi-mcpの使い方**
   - 公式ドキュメントを参照して正しい初期化方法を確認
   - `include_tags=["mcp_tool"]`により、指定タグのエンドポイントのみMCP公開
+  - **マウント方式**: `mount_sse()`を使用（SSE transport）
+    - 公式ドキュメントでは`mount_http()`（Streamable HTTP）が推奨されている
+    - しかし、AWS ECS + ALB環境では`mount_http()`が正常に動作しない問題が発生
+      - `StreamableHTTPSessionManager`の非同期ストリーム読み取りがECS環境で動作しない
+      - リクエストボディの読み取りでタイムアウトが発生する
+    - `mount_sse()`はAWS環境との互換性が高く、安定して動作する
+    - SSEモードのエンドポイント: `/sse`（デフォルト）
 
 - **テストディレクトリの作成**
   - `tests/presentation/router/`ディレクトリを新規作成

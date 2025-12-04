@@ -106,7 +106,7 @@ app.include_router(mcp_lgtm_image_router.router)
 # MCP Serverの設定
 # tags=["mcp_tool"]を持つエンドポイントのみをMCPツールとして公開
 mcp = FastApiMCP(app, include_tags=["mcp_tool"])
-mcp.mount()
+mcp.mount_sse()
 
 
 def start() -> None:
