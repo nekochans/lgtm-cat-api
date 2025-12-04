@@ -203,3 +203,26 @@ MCPツールの`operation_id`は以下のように命名した：
 **検討した代替案:**
 - `fetch_random_lgtm_images` - 外部APIからの取得を強調するが、MCPの慣例から外れる
 - `list_random_lgtm_images` - コレクションを返すことを強調するが、「ランダム」という性質を考慮すると`get`の方が適切
+
+### NGINX SSEエンドポイント用設定
+
+MCP ServerはSSE（Server-Sent Events）でクライアントと通信するため、NGINXで専用の設定が必要。
+
+#### 必須設定
+
+| 設定項目 | 値 | 理由 |
+|---------|-----|------|
+| `proxy_buffering` | off | レスポンスを即座にクライアントへ転送（SSEの即時性確保） |
+| `proxy_cache` | off | キャッシュによる遅延を防止 |
+| `chunked_transfer_encoding` | on | ストリーミング転送を有効化 |
+| `proxy_set_header Connection` | "" | HTTP/1.1のKeep-Alive接続を維持 |
+
+#### タイムアウト設定について
+
+タイムアウト設定（`proxy_connect_timeout`, `proxy_send_timeout`, `proxy_read_timeout`）はすべて**デフォルト値（60秒）のまま**で問題ない。
+
+**理由:**
+- このAPIで提供するMCPツールはDB検索のみで、1秒未満で完了する
+- SSEではデータ受信のたびにタイムアウトタイマーがリセットされるため、アクティブな接続は切れない
+- idle状態で60秒経過して接続が切れても、MCPクライアント（Claude Desktop等）は自動的に再接続する
+- ALBのidle_timeout（60秒）もデフォルトのままで変更不要
