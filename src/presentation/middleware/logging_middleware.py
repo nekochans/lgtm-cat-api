@@ -47,7 +47,7 @@ class LoggingMiddleware:
         async def send_wrapper(message: Message) -> None:
             nonlocal status_code
             if message["type"] == "http.response.start":
-                status_code = message.get("status", 0)
+                status_code = message.get("status")
             await send(message)
 
         try:
