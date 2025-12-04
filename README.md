@@ -201,35 +201,36 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 7. **POST /cat-images/validate/url** - URLから画像を取得して猫画像判定
 8. **POST /cat-images/validate/s3** - S3オブジェクト参照で猫画像判定
 
-#### MCP経由で認証不要なエンドポイント
+#### MCP専用エンドポイント（認証不要）
 
-以下のエンドポイントはMCP経由でアクセスする場合、認証なしで利用できます：
+以下のエンドポイントはMCP専用として`/mcp`プレフィックス配下に公開されており、認証なしで利用できます：
 
-1. **GET /lgtm-images** - ランダムなLGTM画像を返す
-2. **GET /lgtm-images/recently-created** - 最近作成されたLGTM画像を返す
+1. **GET /mcp/lgtm-images** - ランダムなLGTM画像を返す
+2. **GET /mcp/lgtm-images/recently-created** - 最近作成されたLGTM画像を返す
 
 レスポンスモデルはPydanticのBaseModelを使用して定義されており、JSONフィールドにはキャメルケースを使用します（例: `imageUrl`, `imageExtension`）。
 
 ### 認証
 
-すべてのエンドポイントでAWS Cognito JWTトークンによる認証が必要です。
+通常のAPIエンドポイント（`/lgtm-images`、`/cat-images`など）はAWS Cognito JWTトークンによる認証が必要です。MCP専用の`/mcp/...`エンドポイントは認証不要で利用できます。
 
 - **認証方式**: Bearer Token（JWT）
 - **ヘッダー形式**: `Authorization: Bearer <access_token>`
 - **トークン取得**: AWS Cognitoから発行されたアクセストークンを使用
 - **エラーレスポンス**:
   - 401 Unauthorized - トークンが無効、期限切れ、または未提供の場合
+- **認証不要**: `/mcp/lgtm-images`、`/mcp/lgtm-images/recently-created`
 
 ### MCP Server
 
 本APIはMCP (Model Context Protocol) Serverとしても機能し、AIエージェントから直接利用できます。
 
-#### MCP経由で利用可能なエンドポイント
+#### MCP専用エンドポイント
 
-以下のエンドポイントはMCP経由では**認証不要**で利用できます：
+以下のエンドポイントは`/mcp`プレフィックス配下に公開されており、**認証不要**で利用できます：
 
-- **GET /lgtm-images** - ランダムなLGTM画像を取得
-- **GET /lgtm-images/recently-created** - 最近作成されたLGTM画像を取得
+- **GET /mcp/lgtm-images** - ランダムなLGTM画像を取得
+- **GET /mcp/lgtm-images/recently-created** - 最近作成されたLGTM画像を取得
 
 #### Claudeからの利用方法
 
