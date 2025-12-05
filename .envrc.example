@@ -36,11 +36,11 @@ export LOG_LEVEL=INFO
 export COGNITO_REGION=ap-northeast-1
 
 # AWS Bedrock設定（埋め込みモデル用）
-export AWS_BEDROCK_REGION=us-east-1
+export AWS_BEDROCK_REGION=ap-northeast-1
 export AWS_BEDROCK_EMBEDDING_MODEL_ID=cohere.embed-v4:0
 
-# AWS S3 Vector設定（デフォルト: us-east-1）
-export S3_VECTOR_REGION=us-east-1
+# AWS S3 Vector設定（デフォルト: ap-northeast-1）
+export S3_VECTOR_REGION=ap-northeast-1
 
 # Sentry設定（エラー監視、デフォルト: 空文字）
 export SENTRY_DSN=

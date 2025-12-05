@@ -22,13 +22,13 @@ SENTRY_DSN: Final[str] = os.getenv("SENTRY_DSN", "")
 SENTRY_ENVIRONMENT: Final[str] = os.getenv("SENTRY_ENVIRONMENT", "development")
 
 # AWS Bedrock設定
-AWS_BEDROCK_REGION: Final[str] = os.getenv("AWS_BEDROCK_REGION", "us-east-1")
+AWS_BEDROCK_REGION: Final[str] = os.getenv("AWS_BEDROCK_REGION", "ap-northeast-1")
 AWS_BEDROCK_EMBEDDING_MODEL_ID: Final[str] = os.getenv(
     "AWS_BEDROCK_EMBEDDING_MODEL_ID", "cohere.embed-v4:0"
 )
 
 # S3 Vector設定
-S3_VECTOR_REGION: Final[str] = os.getenv("S3_VECTOR_REGION", "us-east-1")
+S3_VECTOR_REGION: Final[str] = os.getenv("S3_VECTOR_REGION", "ap-northeast-1")
 _s3_vector_bucket_name: Optional[str] = os.getenv("S3_VECTOR_BUCKET_NAME")
 _s3_vector_index_name: Optional[str] = os.getenv("S3_VECTOR_INDEX_NAME")
 
