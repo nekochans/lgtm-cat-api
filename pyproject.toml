@@ -10,6 +10,7 @@ dependencies = [
     "aioboto3>=15.5.0",
     "asyncmy>=0.2.10",
     "fastapi>=0.121.0",
+    "fastapi-mcp>=0.4.0",
     "greenlet>=3.2.4",
     "magika>=1.0.1",
     "python-jose[cryptography]>=3.5.0",
