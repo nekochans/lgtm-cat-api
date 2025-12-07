@@ -93,11 +93,11 @@ export LOG_LEVEL=INFO                # デフォルト: INFO（DEBUG, INFO, WARN
 export COGNITO_REGION=ap-northeast-1 # デフォルト: ap-northeast-1
 
 # AWS Bedrock設定（埋め込みモデル用）
-export AWS_BEDROCK_REGION=us-east-1  # デフォルト: us-east-1
+export AWS_BEDROCK_REGION=ap-northeast-1  # デフォルト: ap-northeast-1
 export AWS_BEDROCK_EMBEDDING_MODEL_ID=cohere.embed-v4:0  # デフォルト: cohere.embed-v4:0
 
 # AWS S3 Vector設定
-export S3_VECTOR_REGION=us-east-1    # デフォルト: us-east-1
+export S3_VECTOR_REGION=ap-northeast-1    # デフォルト: ap-northeast-1
 
 # AWS Rekognition設定（画像認識機能用）
 export AWS_REKOGNITION_REGION=ap-northeast-1  # デフォルト: ap-northeast-1
