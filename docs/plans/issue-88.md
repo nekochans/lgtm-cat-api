@@ -11,10 +11,10 @@
 
 ## 完了の定義（Issueより）
 
-- [ ] MCPツール `get_random_lgtm_markdown` が追加されている
-- [ ] ツールを呼び出すとランダムな1件のLGTM画像がマークダウン形式で返される
-- [ ] レスポンス形式は `[![LGTMeow](画像URL)](https://lgtmeow.com)` の形式である
-- [ ] 画像が取得できない場合は適切なエラーが返される
+- [x] MCPツール `get_random_lgtm_markdown` が追加されている
+- [x] ツールを呼び出すとランダムな1件のLGTM画像がマークダウン形式で返される
+- [x] レスポンス形式は `[![LGTMeow](画像URL)](https://lgtmeow.com)` の形式である
+- [x] 画像が取得できない場合は適切なエラーが返される
 
 ---
 
@@ -22,22 +22,22 @@
 
 ### テスト要件
 
-- [ ] ユースケースのテストが追加されている
-  - [ ] 正常系: マークダウン形式の文字列が返される
-  - [ ] 異常系: 画像が0件の場合に例外が発生する
-- [ ] コントローラーのテストが追加されている
-  - [ ] 正常系: マークダウン形式でレスポンスが返される
-  - [ ] 異常系: 画像が0件の場合に404エラーを返す
+- [x] ユースケースのテストが追加されている
+  - [x] 正常系: マークダウン形式の文字列が返される
+  - [x] 異常系: 画像が0件の場合に例外が発生する
+- [x] コントローラーのテストが追加されている
+  - [x] 正常系: マークダウン形式でレスポンスが返される
+  - [x] 異常系: 画像が0件の場合に404エラーを返す
 
 ### ドキュメント要件
 
-- [ ] OpenAPI仕様が自動生成される（コード内のdocstringで対応）
+- [x] OpenAPI仕様が自動生成される（コード内のdocstringで対応）
 
 ### 品質要件（固定）
 
-- [ ] `make lint` が通る
-- [ ] `make typecheck` が通る
-- [ ] `make test` が通る
+- [x] `make lint` が通る
+- [x] `make typecheck` が通る
+- [x] `make test` が通る
 
 ---
 
@@ -59,7 +59,7 @@
 
 ### タスク一覧
 
-- [ ] **Task 1.1**: ユースケースの追加
+- [x] **Task 1.1**: ユースケースの追加
   - 対象ファイル: `src/usecase/extract_random_lgtm_markdown_usecase.py`（新規作成）
   - 作業内容:
     - `ExtractRandomLgtmMarkdownUsecase` クラスを作成
@@ -97,16 +97,16 @@
 
 ### タスク一覧
 
-- [ ] **Task 2.1**: コントローラーメソッドの追加
+- [x] **Task 2.1**: コントローラーメソッドの追加
   - 対象ファイル: `src/presentation/controller/lgtm_image_controller.py`
   - 作業内容:
-    - `exec_random_markdown(repository, base_url)` メソッドを追加
-    - `ExtractRandomLgtmMarkdownUsecase.execute(repository, base_url)` を呼び出す
+    - `exec_random_markdown(repository, base_url, lgtmeow_url)` メソッドを追加
+    - `ExtractRandomLgtmMarkdownUsecase.execute(repository, base_url, lgtmeow_url)` を呼び出す
     - 結果を `PlainTextResponse` で返す（`status_code=200`）
     - `ErrRecordCount` 例外をキャッチして 404 エラーを返す
     - その他の例外は `create_error_response` で 500 エラーを返す
 
-- [ ] **Task 2.2**: コントローラーテストの追加
+- [x] **Task 2.2**: コントローラーテストの追加
   - 対象ファイル: `tests/presentation/controller/test_lgtm_image_controller_exec.py`
   - 作業内容:
     - `TestLgtmImageControllerExecRandomMarkdown` クラスを追加
@@ -116,9 +116,9 @@
 
 ### 完了条件
 
-- [ ] コントローラーメソッドがユースケースを呼び出してレスポンスを返す
-- [ ] テストがすべてパスする
-- [ ] 品質チェックが通る
+- [x] コントローラーメソッドがユースケースを呼び出してレスポンスを返す
+- [x] テストがすべてパスする
+- [x] 品質チェックが通る
 
 ---
 
@@ -134,7 +134,7 @@ MCPルーターに新しいエンドポイントを追加し、MCPツールと�
 
 ### タスク一覧
 
-- [ ] **Task 3.1**: MCPルーターにエンドポイントを追加
+- [x] **Task 3.1**: MCPルーターにエンドポイントを追加
   - 対象ファイル: `src/presentation/router/mcp_lgtm_image_router.py`
   - 作業内容:
     - `@router.get("/lgtm-images/markdown")` エンドポイントを追加
@@ -152,9 +152,9 @@ MCPルーターに新しいエンドポイントを追加し、MCPツールと�
 
 ### 完了条件
 
-- [ ] MCPツールとしてエンドポイントが公開される
-- [ ] OpenAPIドキュメントに仕様が反映される
-- [ ] 品質チェックが通る
+- [x] MCPツールとしてエンドポイントが公開される
+- [x] OpenAPIドキュメントに仕様が反映される
+- [x] 品質チェックが通る
 
 ---
 

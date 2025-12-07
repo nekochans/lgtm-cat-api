@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from domain.repository.lgtm_image_search_repository_interface import (
     LgtmImageSearchRepositoryInterface,
 )
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 from domain.lgtm_image import LgtmImage
 from domain.lgtm_image_errors import (
@@ -46,6 +46,9 @@ from usecase.create_lgtm_image_from_url_usecase import (
 from usecase.create_lgtm_image_usecase import CreateLgtmImageUsecase
 from usecase.extract_random_lgtm_images_usecase import (
     ExtractRandomLgtmImagesUsecase,
+)
+from usecase.extract_random_lgtm_markdown_usecase import (
+    ExtractRandomLgtmMarkdownUsecase,
 )
 from usecase.retrieve_recently_created_lgtm_images_usecase import (
     RetrieveRecentlyCreatedLgtmImagesUsecase,
@@ -170,6 +173,29 @@ class LgtmImageController:
             )
         except Exception as e:
             logger.error(f"Error extracting random LGTM images: {e}")
+            return create_error_response(e)
+
+    @staticmethod
+    async def exec_random_markdown(
+        repository: LgtmImageRepositoryInterface,
+        base_url: str,
+        lgtmeow_url: str,
+    ) -> PlainTextResponse | JSONResponse:
+        logger.info("Extracting random LGTM image as markdown")
+
+        try:
+            markdown: str = await ExtractRandomLgtmMarkdownUsecase.execute(
+                repository, base_url, lgtmeow_url
+            )
+            return PlainTextResponse(content=markdown, status_code=200)
+        except ErrRecordCount:
+            logger.error("Insufficient LGTM images available")
+            return JSONResponse(
+                status_code=404,
+                content={"error": "Insufficient LGTM images available"},
+            )
+        except Exception as e:
+            logger.error(f"Error extracting random LGTM markdown: {e}")
             return create_error_response(e)
 
     @staticmethod

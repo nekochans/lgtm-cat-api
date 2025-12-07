@@ -3,7 +3,7 @@
 import json
 
 import pytest
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -316,6 +316,96 @@ class TestLgtmImageControllerExecRecentlyCreated:
         result = await LgtmImageController.exec_recently_created(
             repository=repository,
             base_url=base_url,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 500
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert "Internal server error" in content["error"]
+
+
+class TestLgtmImageControllerExecRandomMarkdown:
+    """LgtmImageController.exec_random_markdown() のテスト.
+
+    内部DBのみに依存するため、実DB（test_db_session）を使用してテストする。
+    """
+
+    @pytest.mark.asyncio
+    async def test_exec_random_markdown_success(
+        self, test_db_session: AsyncSession
+    ) -> None:
+        """正常系: マークダウン形式のレスポンスを返す."""
+        # Arrange - DBに10件のテストデータを挿入
+        await insert_test_lgtm_images(test_db_session, count=10)
+
+        repository = LgtmImageRepository(test_db_session)
+        base_url = "cdn.example.com"
+        lgtmeow_url = "https://lgtmeow.com"
+
+        # Act
+        result = await LgtmImageController.exec_random_markdown(
+            repository=repository,
+            base_url=base_url,
+            lgtmeow_url=lgtmeow_url,
+        )
+
+        # Assert - PlainTextResponseを返すことを検証
+        assert isinstance(result, PlainTextResponse)
+        assert result.status_code == 200
+
+        # Assert - content-typeが text/plain; charset=utf-8 であることを検証
+        assert result.media_type == "text/plain"
+
+        # Assert - レスポンス内容がマークダウン形式であることを検証
+        content = bytes(result.body).decode("utf-8")
+        assert content.startswith("[![LGTMeow](")
+        assert content.endswith(f")]({lgtmeow_url})")
+        assert f"https://{base_url}" in content
+
+    @pytest.mark.asyncio
+    async def test_exec_random_markdown_raises_error_when_no_records(
+        self, test_db_session: AsyncSession
+    ) -> None:
+        """異常系: レコードが0件の場合に404を返す."""
+        # Arrange - DBにデータを挿入しない（0件）
+        repository = LgtmImageRepository(test_db_session)
+        base_url = "example.com"
+        lgtmeow_url = "https://lgtmeow.com"
+
+        # Act
+        result = await LgtmImageController.exec_random_markdown(
+            repository=repository,
+            base_url=base_url,
+            lgtmeow_url=lgtmeow_url,
+        )
+
+        # Assert
+        assert isinstance(result, JSONResponse)
+        assert result.status_code == 404
+        content = json.loads(bytes(result.body))
+        assert "error" in content
+        assert content["error"] == "Insufficient LGTM images available"
+
+    @pytest.mark.asyncio
+    async def test_exec_random_markdown_propagates_repository_errors(
+        self, test_db_session: AsyncSession
+    ) -> None:
+        """異常系: リポジトリのエラーで500を返す."""
+        # Arrange - lgtm_imagesテーブルを削除してDBエラーを発生させる
+        await test_db_session.execute(text("DROP TABLE IF EXISTS lgtm_images"))
+        await test_db_session.commit()
+
+        repository = LgtmImageRepository(test_db_session)
+        base_url = "example.com"
+        lgtmeow_url = "https://lgtmeow.com"
+
+        # Act
+        result = await LgtmImageController.exec_random_markdown(
+            repository=repository,
+            base_url=base_url,
+            lgtmeow_url=lgtmeow_url,
         )
 
         # Assert
