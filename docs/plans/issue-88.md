@@ -102,7 +102,7 @@
   - 作業内容:
     - `exec_random_markdown(repository, base_url, lgtmeow_url)` メソッドを追加
     - `ExtractRandomLgtmMarkdownUsecase.execute(repository, base_url, lgtmeow_url)` を呼び出す
-    - 結果を `PlainTextResponse` で返す（`status_code=200`）
+    - 結果を `LgtmImageMarkdownResponse` モデルで `JSONResponse` として返す（`status_code=200`）
     - `ErrRecordCount` 例外をキャッチして 404 エラーを返す
     - その他の例外は `create_error_response` で 500 エラーを返す
 
@@ -111,7 +111,7 @@
   - 作業内容:
     - `TestLgtmImageControllerExecRandomMarkdown` クラスを追加
     - 実DB（`test_db_session`）を使用してテスト
-    - 正常系テスト: レスポンスが `PlainTextResponse` で、content-typeが `text/plain` であることを検証
+    - 正常系テスト: レスポンスが `JSONResponse` であることを検証
     - 異常系テスト: 画像が0件の場合に404エラーを返すことを検証
 
 ### 完了条件
@@ -139,16 +139,16 @@ MCPルーターに新しいエンドポイントを追加し、MCPツールと�
   - 作業内容:
     - `@router.get("/lgtm-images/markdown")` エンドポイントを追加
     - `operation_id="get_random_lgtm_markdown"` を設定
-    - `response_class=PlainTextResponse` を設定
+    - `response_model=LgtmImageMarkdownResponse` を設定
     - `summary="Get a random LGTM image in markdown format"` を設定
     - `description`: AIエージェント向けの詳細説明を追加
     - `response_description="Markdown formatted LGTM image"` を設定
     - `tags=["mcp_tool"]` を設定（MCP公開用）
     - `responses` で 200, 404, 500 の例を定義
-      - 200: `[![LGTMeow](https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp)](https://lgtmeow.com)`
+      - 200: `{"markdown": "[![LGTMeow](https://lgtm-images.lgtmeow.com/2022/03/23/10/9738095a-f426-48e4-be8d-93f933c42917.webp)](https://lgtmeow.com)"}`
       - 404: `{"error": "Insufficient LGTM images available"}`
       - 500: `{"error": "Internal server error"}`
-    - `LgtmImageController.exec_random_markdown(repository, base_url)` を呼び出す
+    - `LgtmImageController.exec_random_markdown(repository, base_url, lgtmeow_url)` を呼び出す
 
 ### 完了条件
 
@@ -164,6 +164,7 @@ MCPルーターに新しいエンドポイントを追加し、MCPツールと�
 
 - `src/usecase/extract_random_lgtm_markdown_usecase.py` - 新規作成
 - `src/presentation/controller/lgtm_image_controller.py` - 新メソッド追加
+- `src/presentation/controller/lgtm_image_response.py` - `LgtmImageMarkdownResponse` モデル追加
 - `src/presentation/router/mcp_lgtm_image_router.py` - 新エンドポイント追加
 - `tests/usecase/test_extract_random_lgtm_markdown_usecase.py` - 新規作成
 - `tests/presentation/controller/test_lgtm_image_controller_exec.py` - テスト追加
@@ -182,10 +183,11 @@ MCPルーターに新しいエンドポイントを追加し、MCPツールと�
   - マークダウン変換ロジックはユースケース層に配置
   - コントローラーはユースケースを呼び出してレスポンスを返すだけ
 
-- **レスポンス形式はプレーンテキスト（`text/plain`）**
-  - `FastAPI.responses.PlainTextResponse` を使用
-  - JSONではないため、`create_json_response` は使用しない
-  - エラーレスポンス（404, 500）のみJSONResponse
+- **レスポンス形式はJSON（`application/json`）**
+  - MCP公開の手段としてFastAPI MCPを使用しており、他のエンドポイントはすべてJSON形式でレスポンスを返している
+  - `get_random_lgtm_markdown` だけが `PlainTextResponse` を返すと統一感が失われるため、JSON形式に変更
+  - `LgtmImageMarkdownResponse` モデルを使用し、`create_json_response` で返す
+  - レスポンス形式: `{"markdown": "[![LGTMeow](画像URL)](https://lgtmeow.com)"}`
 
 - **取得件数は1件のみ**
   - ユースケース内でリポジトリから直接1件取得（`repository.fetch_random_lgtm_images(limit=1)`）
