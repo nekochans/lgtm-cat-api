@@ -122,6 +122,15 @@ def get_sentry_environment() -> str:
     return SENTRY_ENVIRONMENT
 
 
+# LGTMeow URL設定
+LGTMEOW_URL: Final[str] = os.getenv("LGTMEOW_URL", "https://lgtmeow.com")
+
+
+def get_lgtmeow_url() -> str:
+    """LGTMeowのURLを取得"""
+    return LGTMEOW_URL
+
+
 # 画像取得設定
 # HTTPリクエストのタイムアウト（秒）
 IMAGE_FETCH_TIMEOUT: Final[int] = 5

@@ -124,3 +124,13 @@ class LgtmImageSearchByImageResponse(BaseModel):
             ]
         ],
     )
+
+
+class LgtmImageMarkdownResponse(BaseModel):
+    markdown: str = Field(
+        ...,
+        description="LGTM画像のマークダウン形式",
+        examples=[
+            "[![LGTMeow](https://lgtm-images.lgtmeow.com/2022/03/23/10/9738095a-f426-48e4-be8d-93f933c42917.webp)](https://lgtmeow.com)"
+        ],
+    )

@@ -5,12 +5,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from presentation.controller.lgtm_image_response import (
+    LgtmImageMarkdownResponse,
     LgtmImageRandomListResponse,
     LgtmImageRecentlyCreatedListResponse,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config import get_lgtm_images_base_url
+from config import get_lgtm_images_base_url, get_lgtmeow_url
 from domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
@@ -131,3 +132,50 @@ async def retrieve_recently_created_lgtm_images(
     base_url: Annotated[str, Depends(get_lgtm_images_base_url)],
 ) -> JSONResponse:
     return await LgtmImageController.exec_recently_created(repository, base_url)
+
+
+@router.get(
+    "/lgtm-images/markdown",
+    summary="Get a random LGTM image in markdown format",
+    description="Returns a single randomly selected LGTM (Looks Good To Me) cat image in markdown format for use in code review comments and pull request approvals.",
+    response_description="Markdown formatted LGTM image",
+    response_model=LgtmImageMarkdownResponse,
+    tags=["mcp_tool"],
+    operation_id="get_random_lgtm_markdown",
+    responses={
+        200: {
+            "description": "Success Response - Markdown formatted LGTM image",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "markdown": "[![LGTMeow](https://lgtm-images.lgtmeow.com/2022/03/23/10/9738095a-f426-48e4-be8d-93f933c42917.webp)](https://lgtmeow.com)"
+                    }
+                }
+            },
+        },
+        404: {
+            "description": "No LGTM images found",
+            "content": {
+                "application/json": {
+                    "example": {"error": "Insufficient LGTM images available"}
+                }
+            },
+        },
+        500: {
+            "description": "Internal server error",
+            "content": {
+                "application/json": {"example": {"error": "Internal server error"}}
+            },
+        },
+    },
+)
+async def get_random_lgtm_markdown(
+    repository: Annotated[
+        LgtmImageRepositoryInterface, Depends(create_lgtm_image_repository)
+    ],
+    base_url: Annotated[str, Depends(get_lgtm_images_base_url)],
+    lgtmeow_url: Annotated[str, Depends(get_lgtmeow_url)],
+) -> JSONResponse:
+    return await LgtmImageController.exec_random_markdown(
+        repository, base_url, lgtmeow_url
+    )

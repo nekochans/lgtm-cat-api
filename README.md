@@ -83,6 +83,9 @@ export DATABASE_NAME=                # データベース名
 # LGTM画像のベースURL
 export LGTM_IMAGES_BASE_URL=lgtm-images.lgtmeow.com  # デフォルト: lgtm-images.lgtmeow.com
 
+# LGTMeowサイトURL（マークダウン形式のリンク先）
+export LGTMEOW_URL=https://lgtmeow.com  # デフォルト: https://lgtmeow.com
+
 # LGTM画像のアップロード先S3バケット
 export UPLOAD_S3_BUCKET_NAME=        # デフォルト: 空文字
 
@@ -207,6 +210,7 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 
 1. **GET /mcp/lgtm-images** - ランダムなLGTM画像を返す
 2. **GET /mcp/lgtm-images/recently-created** - 最近作成されたLGTM画像を返す
+3. **GET /mcp/lgtm-images/markdown** - ランダムに1件のLGTM画像をマークダウン形式で返す
 
 レスポンスモデルはPydanticのBaseModelを使用して定義されており、JSONフィールドにはキャメルケースを使用します（例: `imageUrl`, `imageExtension`）。
 
@@ -219,18 +223,10 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 - **トークン取得**: AWS Cognitoから発行されたアクセストークンを使用
 - **エラーレスポンス**:
   - 401 Unauthorized - トークンが無効、期限切れ、または未提供の場合
-- **認証不要**: `/mcp/lgtm-images`、`/mcp/lgtm-images/recently-created`
 
 ### MCP Server
 
-本APIはMCP (Model Context Protocol) Serverとしても機能し、AIエージェントから直接利用できます。
-
-#### MCP専用エンドポイント
-
-以下のエンドポイントは`/mcp`プレフィックス配下に公開されており、**認証不要**で利用できます：
-
-- **GET /mcp/lgtm-images** - ランダムなLGTM画像を取得
-- **GET /mcp/lgtm-images/recently-created** - 最近作成されたLGTM画像を取得
+本APIはMCP (Model Context Protocol) Serverとしても機能し、AIエージェントから直接利用できます。MCP専用エンドポイントについては上記「API仕様」セクションを参照してください。
 
 #### 利用方法
 
