@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from domain.repository.lgtm_image_search_repository_interface import (
     LgtmImageSearchRepositoryInterface,
 )
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse
 
 from domain.lgtm_image import LgtmImage
 from domain.lgtm_image_errors import (
@@ -30,6 +30,7 @@ from presentation.controller.lgtm_image_request import (
 from presentation.controller.lgtm_image_response import (
     LgtmImageCreateResponse,
     LgtmImageItem,
+    LgtmImageMarkdownResponse,
     LgtmImageRandomListResponse,
     LgtmImageRecentlyCreatedListResponse,
     LgtmImageSearchByImageResponse,
@@ -180,14 +181,15 @@ class LgtmImageController:
         repository: LgtmImageRepositoryInterface,
         base_url: str,
         lgtmeow_url: str,
-    ) -> PlainTextResponse | JSONResponse:
+    ) -> JSONResponse:
         logger.info("Extracting random LGTM image as markdown")
 
         try:
             markdown: str = await ExtractRandomLgtmMarkdownUsecase.execute(
                 repository, base_url, lgtmeow_url
             )
-            return PlainTextResponse(content=markdown, status_code=200)
+            response = LgtmImageMarkdownResponse(markdown=markdown)
+            return create_json_response(response)
         except ErrRecordCount:
             logger.error("Insufficient LGTM images available")
             return JSONResponse(

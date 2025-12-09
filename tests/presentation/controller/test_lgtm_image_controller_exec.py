@@ -3,7 +3,7 @@
 import json
 
 import pytest
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -336,7 +336,7 @@ class TestLgtmImageControllerExecRandomMarkdown:
     async def test_exec_random_markdown_success(
         self, test_db_session: AsyncSession
     ) -> None:
-        """正常系: マークダウン形式のレスポンスを返す."""
+        """正常系: マークダウン形式のJSONレスポンスを返す."""
         # Arrange - DBに10件のテストデータを挿入
         await insert_test_lgtm_images(test_db_session, count=10)
 
@@ -351,18 +351,17 @@ class TestLgtmImageControllerExecRandomMarkdown:
             lgtmeow_url=lgtmeow_url,
         )
 
-        # Assert - PlainTextResponseを返すことを検証
-        assert isinstance(result, PlainTextResponse)
+        # Assert - JSONResponseを返すことを検証
+        assert isinstance(result, JSONResponse)
         assert result.status_code == 200
 
-        # Assert - content-typeが text/plain; charset=utf-8 であることを検証
-        assert result.media_type == "text/plain"
-
         # Assert - レスポンス内容がマークダウン形式であることを検証
-        content = bytes(result.body).decode("utf-8")
-        assert content.startswith("[![LGTMeow](")
-        assert content.endswith(f")]({lgtmeow_url})")
-        assert f"https://{base_url}" in content
+        content = json.loads(bytes(result.body).decode("utf-8"))
+        assert "markdown" in content
+        markdown_value = content["markdown"]
+        assert markdown_value.startswith("[![LGTMeow](")
+        assert markdown_value.endswith(f")]({lgtmeow_url})")
+        assert f"https://{base_url}" in markdown_value
 
     @pytest.mark.asyncio
     async def test_exec_random_markdown_raises_error_when_no_records(

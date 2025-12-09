@@ -3,8 +3,9 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse
 from presentation.controller.lgtm_image_response import (
+    LgtmImageMarkdownResponse,
     LgtmImageRandomListResponse,
     LgtmImageRecentlyCreatedListResponse,
 )
@@ -138,16 +139,17 @@ async def retrieve_recently_created_lgtm_images(
     summary="Get a random LGTM image in markdown format",
     description="Returns a single randomly selected LGTM (Looks Good To Me) cat image in markdown format for use in code review comments and pull request approvals.",
     response_description="Markdown formatted LGTM image",
-    response_class=PlainTextResponse,
-    response_model=None,
+    response_model=LgtmImageMarkdownResponse,
     tags=["mcp_tool"],
     operation_id="get_random_lgtm_markdown",
     responses={
         200: {
             "description": "Success Response - Markdown formatted LGTM image",
             "content": {
-                "text/plain": {
-                    "example": "[![LGTMeow](https://lgtm-images.lgtmeow.com/2021/03/16/23/5947f291-a46e-453c-a230-0d756d7174cb.webp)](https://lgtmeow.com)"
+                "application/json": {
+                    "example": {
+                        "markdown": "[![LGTMeow](https://lgtm-images.lgtmeow.com/2022/03/23/10/9738095a-f426-48e4-be8d-93f933c42917.webp)](https://lgtmeow.com)"
+                    }
                 }
             },
         },
@@ -173,7 +175,7 @@ async def get_random_lgtm_markdown(
     ],
     base_url: Annotated[str, Depends(get_lgtm_images_base_url)],
     lgtmeow_url: Annotated[str, Depends(get_lgtmeow_url)],
-) -> PlainTextResponse | JSONResponse:
+) -> JSONResponse:
     return await LgtmImageController.exec_random_markdown(
         repository, base_url, lgtmeow_url
     )
