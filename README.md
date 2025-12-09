@@ -223,19 +223,10 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 - **トークン取得**: AWS Cognitoから発行されたアクセストークンを使用
 - **エラーレスポンス**:
   - 401 Unauthorized - トークンが無効、期限切れ、または未提供の場合
-- **認証不要**: `/mcp/lgtm-images`、`/mcp/lgtm-images/recently-created`
 
 ### MCP Server
 
-本APIはMCP (Model Context Protocol) Serverとしても機能し、AIエージェントから直接利用できます。
-
-#### MCP専用エンドポイント
-
-以下のエンドポイントは`/mcp`プレフィックス配下に公開されており、**認証不要**で利用できます：
-
-- **GET /mcp/lgtm-images** - ランダムなLGTM画像を取得
-- **GET /mcp/lgtm-images/recently-created** - 最近作成されたLGTM画像を取得
-- **GET /mcp/lgtm-images/markdown** - ランダムに1件のLGTM画像をマークダウン形式で取得
+本APIはMCP (Model Context Protocol) Serverとしても機能し、AIエージェントから直接利用できます。MCP専用エンドポイントについては上記「API設計」セクションを参照してください。
 
 #### 利用方法
 
