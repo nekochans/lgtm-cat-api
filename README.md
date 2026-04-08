@@ -88,6 +88,9 @@ export LGTM_IMAGES_BASE_URL=lgtm-images.lgtmeow.com  # デフォルト: lgtm-ima
 # LGTMeowサイトURL（マークダウン形式のリンク先）
 export LGTMEOW_URL=https://lgtmeow.com  # デフォルト: https://lgtmeow.com
 
+# MCP SSEトランスポートで許可するホスト
+export MCP_ALLOWED_HOST=             # デフォルト: localhostのみ（例: api.example.com）
+
 # LGTM画像のアップロード先S3バケット
 export UPLOAD_S3_BUCKET_NAME=        # デフォルト: 空文字
 

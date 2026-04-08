@@ -160,3 +160,18 @@ AWS_REKOGNITION_REGION: Final[str] = os.getenv(
 def get_aws_rekognition_region() -> str:
     """AWS Rekognitionのリージョンを取得"""
     return AWS_REKOGNITION_REGION
+
+
+# MCP SSEトランスポート設定
+def get_mcp_allowed_hosts() -> list[str]:
+    custom_host = os.getenv("MCP_ALLOWED_HOST", "").strip()
+
+    # ローカル開発環境は常に許可
+    local_hosts = ["127.0.0.1:*", "localhost:*", "[::1]:*"]
+
+    if custom_host:
+        # 環境変数から1つのホストを追加
+        return local_hosts + [f"{custom_host}:*"]
+    else:
+        # デフォルト: ローカル開発環境のみ
+        return local_hosts

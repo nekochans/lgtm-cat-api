@@ -16,8 +16,9 @@ import json
 from typing import Any, cast
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
-from config import get_lgtm_images_base_url, get_lgtmeow_url
+from config import get_lgtm_images_base_url, get_lgtmeow_url, get_mcp_allowed_hosts
 from domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
@@ -29,7 +30,14 @@ from presentation.controller.lgtm_image_controller import LgtmImageController
 logger = get_logger(__name__)
 
 # FastMCPインスタンスを作成
-mcp = FastMCP("lgtmeow")
+mcp = FastMCP(
+    "lgtmeow",
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=get_mcp_allowed_hosts(),
+        allowed_origins=[],  # MCPプロトコルではOriginチェック不要
+    ),
+)
 
 
 @mcp.tool()
