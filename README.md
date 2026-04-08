@@ -10,7 +10,9 @@ LGTMeow用のFastAPIベースのWeb APIです。
 ### Webフレームワーク
 - **FastAPI 0.121.0+** - 高速なPython Webフレームワーク
 - **Uvicorn 0.38.0+** - ASGIサーバー（開発サーバーとして使用）
-  - **fastapi-mcp 0.4.0+** - MCP (Model Context Protocol) サーバー機能
+
+### MCP (Model Context Protocol)
+- **mcp 1.0.0+** - MCP公式Python SDK
 
 ### 認証
 - **python-jose 3.5.0+** - JWT（JSON Web Token）の生成・検証
@@ -204,19 +206,11 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 7. **POST /cat-images/validate/url** - URLから画像を取得して猫画像判定
 8. **POST /cat-images/validate/s3** - S3オブジェクト参照で猫画像判定
 
-#### MCP専用エンドポイント（認証不要）
-
-以下のエンドポイントはMCP専用として`/mcp`プレフィックス配下に公開されており、認証なしで利用できます：
-
-1. **GET /mcp/lgtm-images** - ランダムなLGTM画像を返す
-2. **GET /mcp/lgtm-images/recently-created** - 最近作成されたLGTM画像を返す
-3. **GET /mcp/lgtm-images/markdown** - ランダムに1件のLGTM画像をマークダウン形式で返す
-
 レスポンスモデルはPydanticのBaseModelを使用して定義されており、JSONフィールドにはキャメルケースを使用します（例: `imageUrl`, `imageExtension`）。
 
 ### 認証
 
-通常のAPIエンドポイント（`/lgtm-images`、`/cat-images`など）はAWS Cognito JWTトークンによる認証が必要です。MCP専用の`/mcp/...`エンドポイントは認証不要で利用できます。
+すべてのAPIエンドポイント（`/lgtm-images`、`/cat-images`など）はAWS Cognito JWTトークンによる認証が必要です。
 
 - **認証方式**: Bearer Token（JWT）
 - **ヘッダー形式**: `Authorization: Bearer <access_token>`
@@ -228,7 +222,15 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 
 本APIはMCP (Model Context Protocol) Serverとしても機能し、AIエージェントから直接利用できます。MCP専用エンドポイントについては上記「API仕様」セクションを参照してください。
 
-#### 利用方法
+#### 利用可能なMCPツール
+
+本APIは以下のMCPツールを提供しています：
+
+1. **get_random_lgtm_images** - ランダムなLGTM画像を取得
+2. **get_recently_created_lgtm_images** - 最近作成されたLGTM画像を取得
+3. **get_random_lgtm_markdown** - ランダムに1件のLGTM画像をマークダウン形式で取得
+
+#### サーバーの起動
 
 まず、ローカルサーバーを起動します：
 
@@ -236,9 +238,19 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 make run
 ```
 
+サーバーが http://localhost:8000 で起動します。
+
+#### 対応トランスポート
+
+本APIは以下のトランスポート方式に対応しています：
+
+- **SSE (Server-Sent Events)** - エンドポイント: `/sse` (後方互換性のため維持)
+
+#### MCPクライアント設定
+
 MCPに対応したクライアントから接続できます。以下はClaudeでの設定例です。
 
-##### Claude Desktopの設定
+##### Claude Desktopの設定（SSEトランスポート）
 
 設定ファイル（`claude_desktop_config.json`）に以下を追加してください：
 
@@ -260,17 +272,14 @@ MCPに対応したクライアントから接続できます。以下はClaude�
 }
 ```
 
-※ [uv](https://docs.astral.sh/uv/)のインストールが必要です。
+**必要な設定:**
 
-※ `command`には`uvx`のフルパスを指定してください。以下のコマンドで確認できます：
-
-```bash
-which uvx
-```
+- [uv](https://docs.astral.sh/uv/)のインストールが必要です
+- `command`には`uvx`のフルパスを指定してください（以下のコマンドで確認: `which uvx`）
 
 設定後、Claude Desktopを再起動すると利用可能になります。
 
-##### Claude Codeの設定
+##### Claude Codeの設定（SSEトランスポート）
 
 プロジェクトルートに`.mcp.json`ファイルを作成し、以下を追加してください：
 
