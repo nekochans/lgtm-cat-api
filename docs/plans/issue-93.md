@@ -11,15 +11,15 @@
 
 ## 完了の定義（Issueより）
 
-- [ ] `fastapi-mcp` への依存が完全に除去されている
-- [ ] MCP公式Python SDK (`modelcontextprotocol/python-sdk`) を使用してMCP Serverが実装されている
-- [ ] 既存のSSEトランスポート (`/sse`) が引き続き動作する（後方互換性の維持）
+- [x] `fastapi-mcp` への依存が完全に除去されている
+- [x] MCP公式Python SDK (`modelcontextprotocol/python-sdk`) を使用してMCP Serverが実装されている
+- [x] 既存のSSEトランスポート (`/sse`) が引き続き動作する（後方互換性の維持）
 - [ ] Streamable HTTPトランスポートが追加されている
-- [ ] 既存の3つのMCPツールが同じツール名・スキーマで動作する
+- [x] 既存の3つのMCPツールが同じツール名・スキーマで動作する
   - `get_random_lgtm_images`
   - `get_recently_created_lgtm_images`
   - `get_random_lgtm_markdown`
-- [ ] 既存のREST APIエンドポイント（認証が必要なもの）に影響がない
+- [x] 既存のREST APIエンドポイント（認証が必要なもの）に影響がない
 - [ ] ミドルウェアのスキップ処理が新しいトランスポートのパスにも対応している
 
 ---
