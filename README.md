@@ -12,7 +12,7 @@ LGTMeow用のFastAPIベースのWeb APIです。
 - **Uvicorn 0.38.0+** - ASGIサーバー（開発サーバーとして使用）
 
 ### MCP (Model Context Protocol)
-- **mcp 1.0.0+** - MCP公式Python SDK
+- **mcp 1.27.0+** - MCP公式Python SDK
 
 ### 認証
 - **python-jose 3.5.0+** - JWT（JSON Web Token）の生成・検証
