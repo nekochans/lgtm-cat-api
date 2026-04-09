@@ -170,8 +170,8 @@ def get_mcp_allowed_hosts() -> list[str]:
     local_hosts = ["127.0.0.1:*", "localhost:*", "[::1]:*"]
 
     if custom_host:
-        # 環境変数から1つのホストを追加
-        return local_hosts + [f"{custom_host}:*"]
+        # ALB経由のHTTPSリクエストはポート番号なしでHostヘッダーが送られる
+        return local_hosts + [custom_host]
     else:
         # デフォルト: ローカル開発環境のみ
         return local_hosts
