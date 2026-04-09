@@ -86,17 +86,17 @@
     - **注**: クリーンアーキテクチャに準拠するため、Presentation層に配置
 
 - [x] **Task 1.3**: SSEトランスポートの実装
-  - 対象ファイル: `src/presentation/router/mcp_sse_router.py`（新規作成）
+  - 対象ファイル: `src/main.py`
   - 作業内容:
-    - FastAPIのAPIRouterでSSEエンドポイント (`/sse`) を実装
-    - MCP公式SDKの`sse_server()`を使用してSSEトランスポートを提供
+    - FastMCP (MCP公式Python SDK) の`mcp.sse_app()`で生成されたSSEアプリを`app.mount()`でマウント
     - 既存の`/sse`パスを維持（後方互換性）
+    - **注**: APIRouterは使用せず、FastMCPが提供するSSEアプリを直接マウントする方式を採用
 
 - [x] **Task 1.4**: main.pyの更新とドキュメント整備
   - 対象ファイル: `src/main.py`, `README.md`
   - 作業内容:
     - `fastapi-mcp`のインポートと`FastApiMCP`インスタンスを削除
-    - 新しいSSEルーター (`mcp_sse_router`) を登録
+    - `mcp.sse_app(mount_path="")`を`app.mount("", ...)`でマウント（`/sse`パスで提供）
     - `mcp_lgtm_image_router`を削除（MCPクライアントは直接REST APIを呼ばないため不要）
     - README.mdのMCP設定例を更新（SSEトランスポート用の設定）
     - README.mdからMCP専用エンドポイントのセクションを削除
@@ -161,8 +161,7 @@ MCP仕様 2025-03-26 リビジョンで正式導入された Streamable HTTP ト
 #### Phase 1（PR #1）
 - `pyproject.toml` - 依存関係変更
 - `src/presentation/mcp/mcp_server.py` - 新規作成（MCP Server実装）
-- `src/presentation/router/mcp_sse_router.py` - 新規作成（SSEトランスポート）
-- `src/main.py` - FastApiMCP削除、新ルーター登録
+- `src/main.py` - FastApiMCP削除、SSEアプリマウント追加
 - `README.md` - MCP設定例更新
 
 #### Phase 2（PR #2）
