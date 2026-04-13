@@ -66,7 +66,22 @@
 
 ### 目的
 
-`fastapi-mcp`からMCP公式Python SDKに移行し、既存のSSEトランスポート (`/sse`) を引き続き動作させる。これにより、クライアント側の設定変更なしに新しいSDKに移行できる。
+`fastapi-mcp`からMCP公式Python SDK（低レベルAPI: `mcp.server`）に移行し、既存のSSEトランスポート (`/sse`) を引き続き動作させる。これにより、クライアント側の設定変更なしに新しいSDKに移行できる。
+
+**なぜ低レベルAPI (`mcp.server`) を使用するのか:**
+
+FastMCP（`mcp.sse_app()`等の高レベルAPI）ではなく、低レベルAPI（`mcp.server.Server` + `SseServerTransport`）を採用する理由：
+
+1. **Phase 2でのStreamable HTTPトランスポート追加に対応するため**
+   - `/sse`（SSE）と`/mcp`（Streamable HTTP）の両トランスポートを明確に分離して提供する必要がある
+   - FastMCPの`app.mount()`では、`mount_path`パラメータで柔軟なパス設計ができない
+   - 低レベルAPIでは`SseServerTransport("/sse/messages/")`のように明示的にパス指定が可能
+   - 将来的に`/sse`と`/mcp`が共存する構成を実現できる
+
+2. **FastAPIの例外ハンドラーとの統合（副次的効果）**
+   - 低レベルAPIで`APIRouter`として実装することで、FastAPIのルーティングシステムに統合される
+   - 結果として、FastAPIの`@app.exception_handler`が正常に動作する
+   - 404エラーが正しくJSON形式で返る（FastMCPではPlainText形式になる問題があった）
 
 ### タスク一覧
 
@@ -80,23 +95,26 @@
 - [x] **Task 1.2**: MCP Server実装の作成
   - 対象ファイル: `src/presentation/mcp/mcp_server.py`（新規作成）
   - 作業内容:
-    - MCP公式SDKを使用してMCP Serverクラスを実装
+    - MCP公式SDK（低レベルAPI）の`mcp.server.Server`を使用してMCP Serverを実装
     - 3つのMCPツールを定義（`get_random_lgtm_images`, `get_recently_created_lgtm_images`, `get_random_lgtm_markdown`）
     - 既存の`mcp_lgtm_image_router.py`のコントローラーロジックを再利用
     - **注**: クリーンアーキテクチャに準拠するため、Presentation層に配置
 
 - [x] **Task 1.3**: SSEトランスポートの実装
-  - 対象ファイル: `src/main.py`
+  - 対象ファイル: `src/presentation/router/mcp_sse_router.py`（新規作成）
   - 作業内容:
-    - FastMCP (MCP公式Python SDK) の`mcp.sse_app()`で生成されたSSEアプリを`app.mount()`でマウント
+    - `SseServerTransport`を使用してSSEトランスポートを実装
+    - `/sse`パスで`GET`エンドポイントを提供（FastAPI `APIRouter`として実装）
+    - `/sse/messages/`パスでPOSTメッセージハンドラーを提供（ASGIアプリとして`app.mount()`）
+    - `TransportSecuritySettings`でDNS rebinding攻撃を防御
     - 既存の`/sse`パスを維持（後方互換性）
-    - **注**: APIRouterは使用せず、FastMCPが提供するSSEアプリを直接マウントする方式を採用
 
 - [x] **Task 1.4**: main.pyの更新とドキュメント整備
   - 対象ファイル: `src/main.py`, `README.md`
   - 作業内容:
     - `fastapi-mcp`のインポートと`FastApiMCP`インスタンスを削除
-    - `mcp.sse_app(mount_path="")`を`app.mount("", ...)`でマウント（`/sse`パスで提供）
+    - `mcp_sse_router.router`を`app.include_router()`で登録（`/sse`エンドポイント）
+    - `mcp_sse_router.sse.handle_post_message`を`app.mount("/sse/messages/")`でマウント
     - `mcp_lgtm_image_router`を削除（MCPクライアントは直接REST APIを呼ばないため不要）
     - README.mdのMCP設定例を更新（SSEトランスポート用の設定）
     - README.mdからMCP専用エンドポイントのセクションを削除
@@ -159,9 +177,10 @@ MCP仕様 2025-03-26 リビジョンで正式導入された Streamable HTTP ト
 ### 影響を受けるファイル
 
 #### Phase 1（PR #1）
-- `pyproject.toml` - 依存関係変更
-- `src/presentation/mcp/mcp_server.py` - 新規作成（MCP Server実装）
-- `src/main.py` - FastApiMCP削除、SSEアプリマウント追加
+- `pyproject.toml` - 依存関係変更（`fastapi-mcp`削除、`mcp`追加）
+- `src/presentation/mcp/mcp_server.py` - 新規作成（`mcp.server.Server`を使用したMCP Server実装）
+- `src/presentation/router/mcp_sse_router.py` - 新規作成（`SseServerTransport`を使用したSSEトランスポート）
+- `src/main.py` - FastApiMCP削除、`mcp_sse_router`の登録とマウント
 - `README.md` - MCP設定例更新
 
 #### Phase 2（PR #2）
@@ -180,10 +199,12 @@ MCP仕様 2025-03-26 リビジョンで正式導入された Streamable HTTP ト
 ### 注意点
 
 #### Phase 1
-- MCPツール名とoperation_idは既存と同じにする（`get_random_lgtm_images`, `get_recently_created_lgtm_images`, `get_random_lgtm_markdown`）
+- MCPツール名は既存と同じにする（`get_random_lgtm_images`, `get_recently_created_lgtm_images`, `get_random_lgtm_markdown`）
 - レスポンス形式も既存と完全に同じにする（クライアント側の設定変更を不要にする）
 - `/sse`パスを維持する（後方互換性）
+- メッセージハンドラーパスは`/sse/messages/`とする（Phase 2での`/mcp`追加を考慮した設計）
 - `mcp_lgtm_image_router.py`は削除（MCPクライアントは `/sse` 経由でツールを呼び出すため、REST APIエンドポイントは不要）
+- `handle_post_message`はASGIアプリなので`app.mount()`を使用（`app.include_router()`は使えない）
 
 #### Phase 2
 - ミドルウェアのスキップ処理は `/sse` と `/mcp` の両方に対応

@@ -1,6 +1,6 @@
 # 絶対厳守：編集前に必ずAI実装ルールを読む
 
-"""MCP公式Python SDK (FastMCP) を使用したMCP Server実装.
+"""MCP公式Python SDKを使用したMCP Server実装.
 
 このモジュールはLGTM猫画像を取得するための3つのツールを持つ
 MCP (Model Context Protocol) サーバー機能を提供します。
@@ -12,13 +12,12 @@ REST APIとの一貫性を保つため、既存のコントローラーロジッ
 - get_random_lgtm_markdown: ランダムなLGTM画像をMarkdown形式で取得
 """
 
-import json
-from typing import Any, cast
+from typing import Any
 
-from mcp.server.fastmcp import FastMCP
-from mcp.server.transport_security import TransportSecuritySettings
+from mcp.server import Server
+from mcp.types import Tool, TextContent
 
-from config import get_lgtm_images_base_url, get_lgtmeow_url, get_mcp_allowed_hosts
+from config import get_lgtm_images_base_url, get_lgtmeow_url
 from domain.repository.lgtm_image_repository_interface import (
     LgtmImageRepositoryInterface,
 )
@@ -29,78 +28,118 @@ from presentation.controller.lgtm_image_controller import LgtmImageController
 
 logger = get_logger(__name__)
 
-# FastMCPインスタンスを作成
-mcp = FastMCP(
-    "lgtmeow",
-    transport_security=TransportSecuritySettings(
-        enable_dns_rebinding_protection=True,
-        allowed_hosts=get_mcp_allowed_hosts(),
-        allowed_origins=[],  # MCPプロトコルではOriginチェック不要
-    ),
-)
 
-
-@mcp.tool()
-async def get_random_lgtm_images() -> dict[str, Any]:
-    """ランダムに選択されたLGTM画像のリストを取得する.
+def create_mcp_server() -> Server:
+    """MCP Serverインスタンスを作成して設定する.
 
     Returns:
-        dict[str, Any]: LGTM画像のリストを含む辞書
+        Server: ツールハンドラが設定されたMCP Server
     """
-    logger.info("Executing MCP tool: get_random_lgtm_images")
+    server = Server("lgtmeow")
 
-    async with AsyncSessionLocal() as session:
-        repository: LgtmImageRepositoryInterface = LgtmImageRepository(session)
-        base_url = get_lgtm_images_base_url()
+    @server.list_tools()  # type: ignore[misc, no-untyped-call]  # MCP SDKのデコレーターに型定義がない
+    async def list_tools() -> list[Tool]:
+        """利用可能な全MCPツールのリストを返す.
 
-        response = await LgtmImageController.exec(repository, base_url)
-        # JSONResponseからJSONデータを抽出
-        body = (
-            response.body if isinstance(response.body, bytes) else bytes(response.body)
-        )
-        return cast(dict[str, Any], json.loads(body.decode("utf-8")))
+        Returns:
+            list[Tool]: スキーマを含む利用可能なツールのリスト
+        """
+        return [
+            Tool(
+                name="get_random_lgtm_images",
+                description="Returns a list of randomly selected LGTM (Looks Good To Me) cat images for use in code review comments and pull request approvals.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            ),
+            Tool(
+                name="get_recently_created_lgtm_images",
+                description="Returns a list of the most recently created LGTM (Looks Good To Me) cat images for use in code review comments and pull request approvals.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            ),
+            Tool(
+                name="get_random_lgtm_markdown",
+                description="Returns a single randomly selected LGTM (Looks Good To Me) cat image in markdown format for use in code review comments and pull request approvals.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            ),
+        ]
 
+    @server.call_tool()  # type: ignore[misc]  # MCP SDKのデコレーターに型定義がない
+    async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
+        """指定された名前のツールを実行する.
 
-@mcp.tool()
-async def get_recently_created_lgtm_images() -> dict[str, Any]:
-    """最近作成されたLGTM画像のリストを取得する.
+        Args:
+            name: 実行するツール名
+            arguments: ツールの引数（現在は全ツールがパラメータ不要のため未使用）
 
-    Returns:
-        dict[str, Any]: LGTM画像のリストを含む辞書
-    """
-    logger.info("Executing MCP tool: get_recently_created_lgtm_images")
+        Returns:
+            list[TextContent]: テキストコンテンツとしてのツール実行結果
+        """
+        logger.info(f"Executing MCP tool: {name}")
 
-    async with AsyncSessionLocal() as session:
-        repository: LgtmImageRepositoryInterface = LgtmImageRepository(session)
-        base_url = get_lgtm_images_base_url()
+        # データベースセッションとリポジトリを作成
+        async with AsyncSessionLocal() as session:
+            repository: LgtmImageRepositoryInterface = LgtmImageRepository(session)
+            base_url = get_lgtm_images_base_url()
 
-        response = await LgtmImageController.exec_recently_created(repository, base_url)
-        # JSONResponseからJSONデータを抽出
-        body = (
-            response.body if isinstance(response.body, bytes) else bytes(response.body)
-        )
-        return cast(dict[str, Any], json.loads(body.decode("utf-8")))
+            try:
+                if name == "get_random_lgtm_images":
+                    # ランダムなLGTM画像を取得
+                    response = await LgtmImageController.exec(repository, base_url)
+                    # JSONResponseからJSONコンテンツを抽出（response.bodyはbytes型）
+                    body = (
+                        response.body
+                        if isinstance(response.body, bytes)
+                        else bytes(response.body)
+                    )
+                    return [TextContent(type="text", text=body.decode("utf-8"))]
 
+                elif name == "get_recently_created_lgtm_images":
+                    # 最近作成されたLGTM画像を取得
+                    response = await LgtmImageController.exec_recently_created(
+                        repository, base_url
+                    )
+                    body = (
+                        response.body
+                        if isinstance(response.body, bytes)
+                        else bytes(response.body)
+                    )
+                    return [TextContent(type="text", text=body.decode("utf-8"))]
 
-@mcp.tool()
-async def get_random_lgtm_markdown() -> dict[str, Any]:
-    """ランダムなLGTM画像をMarkdown形式で取得する.
+                elif name == "get_random_lgtm_markdown":
+                    # ランダムなLGTM画像をMarkdown形式で取得
+                    lgtmeow_url = get_lgtmeow_url()
+                    response = await LgtmImageController.exec_random_markdown(
+                        repository, base_url, lgtmeow_url
+                    )
+                    body = (
+                        response.body
+                        if isinstance(response.body, bytes)
+                        else bytes(response.body)
+                    )
+                    return [TextContent(type="text", text=body.decode("utf-8"))]
 
-    Returns:
-        dict[str, Any]: Markdown形式のLGTM画像を含む辞書
-    """
-    logger.info("Executing MCP tool: get_random_lgtm_markdown")
+                else:
+                    error_msg = f"Unknown tool: {name}"
+                    logger.error(error_msg)
+                    return [
+                        TextContent(type="text", text=f'{{"error": "{error_msg}"}}')
+                    ]
 
-    async with AsyncSessionLocal() as session:
-        repository: LgtmImageRepositoryInterface = LgtmImageRepository(session)
-        base_url = get_lgtm_images_base_url()
-        lgtmeow_url = get_lgtmeow_url()
+            except Exception as e:
+                logger.error(f"Error executing tool {name}: {e}")
+                return [
+                    TextContent(type="text", text='{"error": "Internal server error"}')
+                ]
 
-        response = await LgtmImageController.exec_random_markdown(
-            repository, base_url, lgtmeow_url
-        )
-        # JSONResponseからJSONデータを抽出
-        body = (
-            response.body if isinstance(response.body, bytes) else bytes(response.body)
-        )
-        return cast(dict[str, Any], json.loads(body.decode("utf-8")))
+    return server

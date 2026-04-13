@@ -23,8 +23,8 @@ from presentation.router import (
     cat_image_router,
     lgtm_image_router,
     lgtm_image_v2_router,
+    mcp_sse_router,
 )
-from presentation.mcp.mcp_server import mcp
 
 # 必須の環境変数を検証（起動時にfail-fast）
 try:
@@ -103,8 +103,11 @@ app.include_router(lgtm_image_v2_router.router)
 app.include_router(health_check_router.router)
 
 # MCP SSEトランスポート（認証不要）
-# FastMCPで生成されたSSEアプリをマウント（/sse, /messages/）
-app.mount("", mcp.sse_app(mount_path=""))
+# /sseエンドポイントをルーターとして登録（FastAPIの例外ハンドラーが動作）
+app.include_router(mcp_sse_router.router)
+
+# SSEトランスポート用のPOSTメッセージハンドラをマウント
+app.mount("/sse/messages/", mcp_sse_router.sse.handle_post_message)
 
 
 def start() -> None:
