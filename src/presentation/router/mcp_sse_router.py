@@ -1,4 +1,4 @@
-# 絶対厳守:編集前に必ずAI実装ルールを読む
+# 絶対厳守：編集前に必ずAI実装ルールを読む
 
 """MCP SSEトランスポート用のルーター実装.
 
@@ -21,6 +21,9 @@ from log.logger import get_logger
 
 logger = get_logger(__name__)
 
+# SSEトランスポート用のPOSTメッセージパス定数
+SSE_MESSAGES_PATH = "/sse/messages/"
+
 # SSEトランスポート用のルーター
 router = APIRouter()
 
@@ -30,7 +33,7 @@ server = create_mcp_server()
 # SSEトランスポートを作成（メッセージ投稿先のエンドポイントを指定）
 # DNS rebinding攻撃を防ぐため、許可されたホストのみを受け入れる
 sse = SseServerTransport(
-    "/sse/messages/",
+    SSE_MESSAGES_PATH,
     security_settings=TransportSecuritySettings(
         enable_dns_rebinding_protection=True,
         allowed_hosts=get_mcp_allowed_hosts(),

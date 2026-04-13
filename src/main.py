@@ -107,7 +107,7 @@ app.include_router(health_check_router.router)
 app.include_router(mcp_sse_router.router)
 
 # SSEトランスポート用のPOSTメッセージハンドラをマウント
-app.mount("/sse/messages/", mcp_sse_router.sse.handle_post_message)
+app.mount(mcp_sse_router.SSE_MESSAGES_PATH, mcp_sse_router.sse.handle_post_message)
 
 
 def start() -> None:
