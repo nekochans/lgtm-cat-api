@@ -223,7 +223,7 @@ APIはシンプルなRESTパターンに従い、8つのエンドポイントを
 
 ### MCP Server
 
-本APIはMCP (Model Context Protocol) Serverとしても機能し、AIエージェントから直接利用できます。MCP専用エンドポイントについては上記「API仕様」セクションを参照してください。
+本APIはMCP (Model Context Protocol) Serverとしても機能し、AIエージェントから直接利用できます。
 
 #### 利用可能なMCPツール
 
