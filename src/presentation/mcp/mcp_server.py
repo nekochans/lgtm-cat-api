@@ -18,11 +18,8 @@ from mcp.server import Server
 from mcp.types import Tool, TextContent
 
 from config import get_lgtm_images_base_url, get_lgtmeow_url
-from domain.repository.lgtm_image_repository_interface import (
-    LgtmImageRepositoryInterface,
-)
 from infrastructure.database import AsyncSessionLocal
-from infrastructure.lgtm_image_repository import LgtmImageRepository
+from infrastructure.factory import create_lgtm_image_repository
 from log.logger import get_logger
 from presentation.controller.lgtm_image_controller import LgtmImageController
 
@@ -89,7 +86,7 @@ def create_mcp_server() -> Server:
 
         # データベースセッションとリポジトリを作成
         async with AsyncSessionLocal() as session:
-            repository: LgtmImageRepositoryInterface = LgtmImageRepository(session)
+            repository = create_lgtm_image_repository(session)
             base_url = get_lgtm_images_base_url()
 
             try:
