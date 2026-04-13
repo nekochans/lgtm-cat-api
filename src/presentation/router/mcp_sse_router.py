@@ -7,7 +7,7 @@
 
 エンドポイント:
 - GET /sse - SSEストリームの開始
-- POST /messages/ - クライアントからのメッセージ受信（SSEセッションにリンク）
+- POST /sse/messages/ - クライアントからのメッセージ受信（SSEセッションにリンク）
 """
 
 from fastapi import APIRouter, Request
