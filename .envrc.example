@@ -29,6 +29,10 @@ export LGTM_IMAGES_BASE_URL=
 # LGTM画像のアップロード先S3バケット（デフォルト: 空文字）
 export UPLOAD_S3_BUCKET_NAME=
 
+# MCP SSEトランスポートで許可するホスト（デフォルト: localhostのみ）
+# 例: api.example.com
+export MCP_ALLOWED_HOST=
+
 # ログ設定（デフォルト: INFO）
 export LOG_LEVEL=INFO
 

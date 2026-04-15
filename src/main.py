@@ -19,12 +19,11 @@ from log.logger import setup_logging
 from log.request_id import get_request_id
 from presentation.middleware.logging_middleware import LoggingMiddleware
 from presentation.middleware.request_id_middleware import RequestIdMiddleware
-from fastapi_mcp import FastApiMCP  # type: ignore[import-untyped]
 from presentation.router import (
     cat_image_router,
     lgtm_image_router,
     lgtm_image_v2_router,
-    mcp_lgtm_image_router,
+    mcp_sse_router,
 )
 
 # 必須の環境変数を検証（起動時にfail-fast）
@@ -47,6 +46,7 @@ try:
 except Exception as e:
     print(f"WARNING: Failed to initialize Sentry: {e}", file=sys.stderr)
     print("Application will continue without Sentry error monitoring.", file=sys.stderr)
+
 
 app = FastAPI(title="LGTM Cat API")
 
@@ -101,17 +101,13 @@ app.include_router(cat_image_router.router)
 app.include_router(lgtm_image_router.router)
 app.include_router(lgtm_image_v2_router.router)
 app.include_router(health_check_router.router)
-app.include_router(mcp_lgtm_image_router.router)
 
-# MCP Serverの設定
-# tags=["mcp_tool"]を持つエンドポイントのみをMCPツールとして公開
-mcp = FastApiMCP(
-    app,
-    name="lgtmeow",
-    description="LGTM images for cat lovers",
-    include_tags=["mcp_tool"],
-)
-mcp.mount_sse()
+# MCP SSEトランスポート（認証不要）
+# /sseエンドポイントをルーターとして登録（FastAPIの例外ハンドラーが動作）
+app.include_router(mcp_sse_router.router)
+
+# SSEトランスポート用のPOSTメッセージハンドラをマウント
+app.mount(mcp_sse_router.SSE_MESSAGES_PATH, mcp_sse_router.sse.handle_post_message)
 
 
 def start() -> None:

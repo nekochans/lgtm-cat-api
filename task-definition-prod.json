@@ -85,6 +85,10 @@
         {
           "name": "IMAGE_ALLOWED_DOMAIN",
           "valueFrom": "/prod/lgtm-cat/api/IMAGE_ALLOWED_DOMAIN"
+        },
+        {
+          "name": "MCP_ALLOWED_HOST",
+          "valueFrom": "/prod/lgtm-cat/api/MCP_ALLOWED_HOST"
         }
       ],
       "ulimits": [
