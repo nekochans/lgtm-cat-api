@@ -2,6 +2,8 @@
 
 import sys
 import uvicorn
+from contextlib import asynccontextmanager
+from typing import AsyncIterator
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -25,6 +27,7 @@ from presentation.router import (
     lgtm_image_v2_router,
     mcp_sse_router,
 )
+from presentation.mcp import mcp_http_transport
 
 # 必須の環境変数を検証（起動時にfail-fast）
 try:
@@ -48,7 +51,21 @@ except Exception as e:
     print("Application will continue without Sentry error monitoring.", file=sys.stderr)
 
 
-app = FastAPI(title="LGTM Cat API")
+# FastAPIアプリケーションのlifespan設定
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """FastAPIアプリケーションのライフサイクル管理.
+
+    StreamableHTTPSessionManagerを初期化してタスクグループを作成します。
+    これにより、`app.mount()`でマウントされたMCP HTTPトランスポートが正常に動作します。
+    """
+    # StreamableHTTPSessionManagerを初期化
+    async with mcp_http_transport.session_manager.run():
+        yield
+
+
+# FastAPIアプリケーション作成
+app = FastAPI(title="LGTM Cat API", lifespan=lifespan)
 
 
 # 例外ハンドラの登録（X-Request-Idヘッダーを追加）
@@ -108,6 +125,10 @@ app.include_router(mcp_sse_router.router)
 
 # SSEトランスポート用のPOSTメッセージハンドラをマウント
 app.mount(mcp_sse_router.SSE_MESSAGES_PATH, mcp_sse_router.sse.handle_post_message)
+
+# MCP HTTPトランスポート（認証不要）
+# /mcpエンドポイントをASGIアプリとしてマウント（低レベルAPI使用）
+app.mount("/mcp", mcp_http_transport.http_app)
 
 
 def start() -> None:

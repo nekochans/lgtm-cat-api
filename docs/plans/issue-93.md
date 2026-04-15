@@ -14,13 +14,13 @@
 - [x] `fastapi-mcp` への依存が完全に除去されている
 - [x] MCP公式Python SDK (`modelcontextprotocol/python-sdk`) を使用してMCP Serverが実装されている
 - [x] 既存のSSEトランスポート (`/sse`) が引き続き動作する（後方互換性の維持）
-- [ ] Streamable HTTPトランスポートが追加されている
+- [x] Streamable HTTPトランスポートが追加されている
 - [x] 既存の3つのMCPツールが同じツール名・スキーマで動作する
   - `get_random_lgtm_images`
   - `get_recently_created_lgtm_images`
   - `get_random_lgtm_markdown`
 - [x] 既存のREST APIエンドポイント（認証が必要なもの）に影響がない
-- [ ] ミドルウェアのスキップ処理が新しいトランスポートのパスにも対応している
+- [x] ミドルウェアのスキップ処理が新しいトランスポートのパスにも対応している
 
 ---
 
@@ -47,9 +47,9 @@
 
 ### 品質要件（固定）
 
-- [ ] `make lint` が通る
-- [ ] `make typecheck` が通る
-- [ ] `make test` が通る
+- [x] `make lint` が通る
+- [x] `make typecheck` が通る
+- [x] `make test` が通る
 
 ---
 
@@ -142,33 +142,35 @@ MCP仕様 2025-03-26 リビジョンで正式導入された Streamable HTTP ト
 
 ### タスク一覧
 
-- [ ] **Task 2.1**: Streamable HTTPトランスポートの実装
-  - 対象ファイル: `src/presentation/router/mcp_http_router.py`（新規作成）
+- [x] **Task 2.1**: Streamable HTTPトランスポートの実装
+  - 対象ファイル: `src/presentation/mcp/mcp_http_transport.py`（新規作成）
   - 作業内容:
-    - FastAPIのAPIRouterでHTTPエンドポイント (`/mcp`) を実装
-    - MCP公式SDKのStreamable HTTPトランスポート機能を使用
+    - MCP公式SDKの`StreamableHTTPSessionManager`を使用してHTTPトランスポートを実装
+    - `/mcp`パスでASGIアプリとして提供（`app.mount()`でマウント）
     - Phase 1で作成したMCP Serverインスタンスを再利用
+    - `main.py`のlifespanで`session_manager.run()`を呼び出してタスクグループを初期化
 
-- [ ] **Task 2.2**: ミドルウェアのスキップ処理更新
+- [x] **Task 2.2**: ミドルウェアのスキップ処理更新
   - 対象ファイル: `src/presentation/middleware/logging_middleware.py`, `src/presentation/middleware/request_id_middleware.py`
   - 作業内容:
     - `/mcp`パスもスキップするように条件を追加
     - 既存の`/sse`スキップ処理と統合（`/sse`または`/mcp`）
 
-- [ ] **Task 2.3**: main.pyの更新とドキュメント整備
+- [x] **Task 2.3**: main.pyの更新とドキュメント整備
   - 対象ファイル: `src/main.py`, `README.md`
   - 作業内容:
-    - 新しいHTTPルーター (`mcp_http_router`) を登録
+    - `mcp_http_transport`をインポートし、`app.mount("/mcp", mcp_http_transport.http_app)`でマウント
+    - `lifespan`関数で`mcp_http_transport.session_manager.run()`を呼び出してタスクグループを初期化
     - README.mdにStreamable HTTPトランスポートの設定例を追加
     - MCPクライアント設定例を両方のトランスポート（SSE、HTTP）に対応
 
 ### 完了条件
 
-- [ ] Streamable HTTPトランスポート (`/mcp`) が動作する
-- [ ] ミドルウェアのスキップ処理が `/mcp` パスにも対応している
-- [ ] README.mdにStreamable HTTPトランスポートの設定例が追加されている
-- [ ] SSEトランスポートも引き続き動作する（両方のトランスポートが共存）
-- [ ] 品質チェックが通る
+- [x] Streamable HTTPトランスポート (`/mcp`) が動作する（実装完了、手動確認推奨）
+- [x] ミドルウェアのスキップ処理が `/mcp` パスにも対応している
+- [x] README.mdにStreamable HTTPトランスポートの設定例が追加されている
+- [x] SSEトランスポートも引き続き動作する（両方のトランスポートが共存）
+- [x] 品質チェックが通る（lint, typecheck, test全て通過）
 
 ---
 
@@ -184,10 +186,10 @@ MCP仕様 2025-03-26 リビジョンで正式導入された Streamable HTTP ト
 - `README.md` - MCP設定例更新
 
 #### Phase 2（PR #2）
-- `src/presentation/router/mcp_http_router.py` - 新規作成（HTTPトランスポート）
-- `src/presentation/middleware/logging_middleware.py` - スキップパス追加
-- `src/presentation/middleware/request_id_middleware.py` - スキップパス追加
-- `src/main.py` - HTTPルーター登録
+- `src/presentation/mcp/mcp_http_transport.py` - 新規作成（HTTPトランスポート、`StreamableHTTPSessionManager`使用）
+- `src/presentation/middleware/logging_middleware.py` - スキップパス追加（`/mcp`を追加）
+- `src/presentation/middleware/request_id_middleware.py` - スキップパス追加（`/mcp`を追加）
+- `src/main.py` - HTTPトランスポートのマウントとlifespan設定
 - `README.md` - HTTPトランスポート設定例追加
 
 ### 参考にすべき既存コード
@@ -207,9 +209,19 @@ MCP仕様 2025-03-26 リビジョンで正式導入された Streamable HTTP ト
 - `handle_post_message`はASGIアプリなので`app.mount()`を使用（`app.include_router()`は使えない）
 
 #### Phase 2
-- ミドルウェアのスキップ処理は `/sse` と `/mcp` の両方に対応
-- AWS ECS + ALB環境での動作を考慮（タイムアウト設定など）
+- ミドルウェアのスキップ処理は `/sse` と `/mcp` の両方に対応（`path.startswith("/sse") or path.startswith("/mcp")`）
+- `StreamableHTTPSessionManager`を使用してHTTPトランスポートを実装
+- `main.py`の`lifespan`関数内で`session_manager.run()`を呼び出してタスクグループを初期化（必須）
+- HTTPトランスポートはASGIアプリとして`app.mount("/mcp", mcp_http_transport.http_app)`でマウント
 - SSEとHTTPの両方のトランスポートが同時に動作することを確認
+
+**Streamable HTTPで`app.mount()`を使う理由:**
+
+事実として以下が観察される:
+1. `StreamableHTTPSessionManager.handle_request()`はASGIインターフェース（`scope, receive, send`）を受け取り、`None`を返す
+2. FastAPIの`APIRouter`はFastAPIエンドポイント関数（`Request`, `Response`を扱う）を期待する
+3. これらは異なるインターフェースのため、`APIRouter`として直接登録できない
+4. そのため、ASGIアプリとしてラップし（`MCPHTTPApp`クラス）、`app.mount()`でマウントする
 
 ### MCP公式Python SDKの参考情報
 
