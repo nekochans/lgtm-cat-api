@@ -17,6 +17,8 @@ from presentation.mcp.mcp_server import create_mcp_server
 # DNS rebinding攻撃を防ぐため、許可されたホストのみを受け入れる
 session_manager = StreamableHTTPSessionManager(
     create_mcp_server(),
+    stateless=True,
+    json_response=True,
     security_settings=TransportSecuritySettings(
         enable_dns_rebinding_protection=True,
         allowed_hosts=get_mcp_allowed_hosts(),
