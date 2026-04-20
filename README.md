@@ -248,18 +248,21 @@ make run
 本APIは以下のトランスポート方式に対応しています：
 
 - **SSE (Server-Sent Events)** - エンドポイント: `/sse` (後方互換性のため維持)
+- **Streamable HTTP** - エンドポイント: `/mcp` (MCP仕様 2025-03-26 準拠、本番環境推奨)
 
 #### MCPクライアント設定
 
 MCPに対応したクライアントから接続できます。以下はClaudeでの設定例です。
 
-##### Claude Desktopの設定（SSEトランスポート）
+##### Claude Desktopの設定
 
 設定ファイル（`claude_desktop_config.json`）に以下を追加してください：
 
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+**SSEトランスポートを使う場合（レガシー）:**
 
 ```json
 {
@@ -275,6 +278,24 @@ MCPに対応したクライアントから接続できます。以下はClaude�
 }
 ```
 
+**Streamable HTTPトランスポートを使う場合（推奨）:**
+
+```json
+{
+  "mcpServers": {
+    "lgtmeow": {
+      "command": "/path/to/uvx",
+      "args": [
+        "mcp-proxy",
+        "--transport",
+        "streamablehttp",
+        "http://localhost:8000/mcp"
+      ]
+    }
+  }
+}
+```
+
 **必要な設定:**
 
 - [uv](https://docs.astral.sh/uv/)のインストールが必要です
@@ -282,9 +303,11 @@ MCPに対応したクライアントから接続できます。以下はClaude�
 
 設定後、Claude Desktopを再起動すると利用可能になります。
 
-##### Claude Codeの設定（SSEトランスポート）
+##### Claude Codeの設定
 
 プロジェクトルートに`.mcp.json`ファイルを作成し、以下を追加してください：
+
+**SSEトランスポートを使う場合（レガシー）:**
 
 ```json
 {
@@ -297,7 +320,20 @@ MCPに対応したクライアントから接続できます。以下はClaude�
 }
 ```
 
-Claude Codeはプロキシを必要とせず、SSEエンドポイントに直接接続できます。Claude Codeを起動すると自動的にMCPサーバーが認識されます。
+**Streamable HTTPトランスポートを使う場合（推奨）:**
+
+```json
+{
+  "mcpServers": {
+    "lgtmeow": {
+      "type": "http",
+      "url": "http://localhost:8000/mcp"
+    }
+  }
+}
+```
+
+Claude Codeはプロキシを必要とせず、MCPエンドポイントに直接接続できます。Claude Codeを起動すると自動的にMCPサーバーが認識されます。
 
 ## プロジェクト構造
 

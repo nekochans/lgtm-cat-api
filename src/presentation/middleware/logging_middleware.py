@@ -20,9 +20,11 @@ class LoggingMiddleware:
             await self.app(scope, receive, send)
             return
 
-        # SSEエンドポイントはロギングをスキップ
+        # MCPエンドポイント（SSE、Streamable HTTP）はロギングをスキップ
+        # SSE: 長時間接続のため、通常のHTTPリクエストとログ出力の性質が異なる
+        # Streamable HTTP: 同様に長時間接続またはストリーミングレスポンスのため
         path = scope.get("path", "")
-        if path.startswith("/sse"):
+        if path.startswith("/sse") or path.startswith("/mcp"):
             await self.app(scope, receive, send)
             return
 

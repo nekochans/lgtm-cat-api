@@ -17,9 +17,10 @@ class RequestIdMiddleware:
             await self.app(scope, receive, send)
             return
 
-        # SSEエンドポイントはリクエストID処理をスキップ
+        # MCPエンドポイント（SSE、Streamable HTTP）はリクエストID処理をスキップ
+        # LoggingMiddlewareでログを出力しないため、リクエストIDを生成・設定する意味がない
         path = scope.get("path", "")
-        if path.startswith("/sse"):
+        if path.startswith("/sse") or path.startswith("/mcp"):
             await self.app(scope, receive, send)
             return
 
