@@ -5,7 +5,7 @@ LGTMeow用のFastAPIベースのWeb APIです。
 ## 技術スタック
 
 ### 言語・ランタイム
-- **Python 3.13.9**
+- **Python 3.13.18**
 
 ### Webフレームワーク
 - **FastAPI 0.121.0+** - 高速なPython Webフレームワーク
@@ -29,7 +29,7 @@ LGTMeow用のFastAPIベースのWeb APIです。
 ## セットアップ
 
 ### 前提条件
-- Python 3.13.9以上
+- Python 3.13.18以上
 - uv（インストール方法: https://docs.astral.sh/uv/getting-started/installation/）
 
 ### 依存関係のインストール
